@@ -1,0 +1,2 @@
+function VersionSelector({ version, onVersionChange }) { return <div className="field"><label htmlFor="version">Version</label><select id="version" value={version} onChange={e=>onVersionChange(e.target.value)}><option value="">Select version</option><option>v0.115</option><option>v15.1</option><option>v16.3</option><option>v7.4</option><option>v1.31</option><option>2024-11</option></select></div> }
+export default VersionSelector

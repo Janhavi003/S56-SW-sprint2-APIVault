@@ -1,0 +1,2 @@
+function QuestionInput({ question, onQuestionChange }) { return <div className="question-field"><label htmlFor="question">Technical Question</label><textarea id="question" value={question} onChange={e=>onQuestionChange(e.target.value)} placeholder="e.g. How do I configure middleware for rate limiting?" rows="4"/><div className="question-hint">Answers are grounded exclusively in official documentation for the selected version.</div></div> }
+export default QuestionInput
