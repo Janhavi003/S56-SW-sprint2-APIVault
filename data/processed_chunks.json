@@ -1,0 +1,102 @@
+[
+  {
+    "chunk_id": "4c8809bf0616eaa5",
+    "product_id": "fastapi",
+    "version": "v0.100.0",
+    "document_title": "FastAPI v0.100.0 - Path Parameters and Routing",
+    "section_title": "Declaring Path Parameters",
+    "content": "## Declaring Path Parameters\n\nYou can declare path parameters using standard Python format strings.\n\n```python\nfrom fastapi import FastAPI\n\napp = FastAPI()\n\n@app.get(\"/items/{item_id}\")\ndef read_item(item_id: int):\n    return {\"item_id\": item_id}\n```\n\nThe value of the path parameter `item_id` will be passed to your function as the argument `item_id`.",
+    "token_count": 47,
+    "source_path": "data/docs/fastapi/v0.100.0/routing.md"
+  },
+  {
+    "chunk_id": "683962edfbbfcdfa",
+    "product_id": "fastapi",
+    "version": "v0.100.0",
+    "document_title": "FastAPI v0.100.0 - Path Parameters and Routing",
+    "section_title": "Path Parameters with Types",
+    "content": "## Path Parameters with Types\n\nYou can declare the type of a path parameter in the function using standard Python type annotations.\n\nIf you run this example and open your browser at `http://127.0.0.1:8000/items/3`, you will see a response of:\n\n```json\n{\"item_id\": 3}\n```",
+    "token_count": 43,
+    "source_path": "data/docs/fastapi/v0.100.0/routing.md"
+  },
+  {
+    "chunk_id": "eed8b03fa643d9cf",
+    "product_id": "fastapi",
+    "version": "v0.100.0",
+    "document_title": "FastAPI v0.100.0 - Path Parameters and Routing",
+    "section_title": "Data Validation",
+    "content": "### Data Validation\n\nData validation is performed automatically by Pydantic v1 in FastAPI v0.100.0. If you pass an invalid type like `http://127.0.0.1:8000/items/foo`, HTTP 422 Unprocessable Entity is returned.",
+    "token_count": 28,
+    "source_path": "data/docs/fastapi/v0.100.0/routing.md"
+  },
+  {
+    "chunk_id": "1c939772396b69d4",
+    "product_id": "fastapi",
+    "version": "v0.110.0",
+    "document_title": "FastAPI v0.110.0 - Path Parameters and Routing",
+    "section_title": "Declaring Path Parameters",
+    "content": "## Declaring Path Parameters\n\nIn FastAPI v0.110.0, path parameters are fully integrated with Pydantic v2 and `typing.Annotated`.\n\n```python\nfrom typing import Annotated\nfrom fastapi import FastAPI, Path\n\napp = FastAPI()\n\n@app.get(\"/items/{item_id}\")\ndef read_item(item_id: Annotated[int, Path(title=\"The ID of the item to get\", ge=1)]):\n    return {\"item_id\": item_id}\n```",
+    "token_count": 46,
+    "source_path": "data/docs/fastapi/v0.110.0/routing.md"
+  },
+  {
+    "chunk_id": "ba0ae990370b1f88",
+    "product_id": "fastapi",
+    "version": "v0.110.0",
+    "document_title": "FastAPI v0.110.0 - Path Parameters and Routing",
+    "section_title": "Pydantic v2 Migration Notes",
+    "content": "## Pydantic v2 Migration Notes\n\nFastAPI v0.110.0 uses Pydantic v2 for internal schema generation and validation.\n\nKey changes:\n- `regex` parameter in `Path` is replaced by `pattern`.\n- Custom root validators should use `@model_validator` instead of `@root_validator`.\n- Enhanced performance and strict typing validation out of the box.",
+    "token_count": 48,
+    "source_path": "data/docs/fastapi/v0.110.0/routing.md"
+  },
+  {
+    "chunk_id": "21412242bcf20351",
+    "product_id": "stripe-api",
+    "version": "v2023-10-16",
+    "document_title": "Stripe API v2023-10-16 - Charges API",
+    "section_title": "Create a Charge",
+    "content": "## Create a Charge\n\nTo charge a credit card or other payment source, create a `Charge` object.\n\n```json\nPOST /v1/charges\n{\n  \"amount\": 2000,\n  \"currency\": \"usd\",\n  \"source\": \"tok_visa\",\n  \"description\": \"Charge for jenny.rosen@example.com\"\n}\n```",
+    "token_count": 33,
+    "source_path": "data/docs/stripe-api/v2023-10-16/charges.md"
+  },
+  {
+    "chunk_id": "e827d34e8b313877",
+    "product_id": "stripe-api",
+    "version": "v2023-10-16",
+    "document_title": "Stripe API v2023-10-16 - Charges API",
+    "section_title": "Parameters",
+    "content": "### Parameters\n\n- `amount` (integer, required): A positive integer representing how much to charge in the smallest currency unit (e.g., 100 cents to charge $1.00).\n- `currency` (string, required): Three-letter ISO currency code, in lowercase. Must be a supported currency.\n- `source` (string, optional): A payment source to be charged. This can be a token, a card ID, or a customer ID.",
+    "token_count": 62,
+    "source_path": "data/docs/stripe-api/v2023-10-16/charges.md"
+  },
+  {
+    "chunk_id": "d4667718e9903dce",
+    "product_id": "stripe-api",
+    "version": "v2024-04-01",
+    "document_title": "Stripe API v2024-04-01 - Charges API & PaymentIntents",
+    "section_title": "Migration Notice: Charges to PaymentIntents",
+    "content": "## Migration Notice: Charges to PaymentIntents\n\nIn Stripe API version `2024-04-01`, direct creation of `Charge` objects via `/v1/charges` is deprecated for customer-facing flows in favor of `PaymentIntents`.",
+    "token_count": 27,
+    "source_path": "data/docs/stripe-api/v2024-04-01/charges.md"
+  },
+  {
+    "chunk_id": "7d130c325afba745",
+    "product_id": "stripe-api",
+    "version": "v2024-04-01",
+    "document_title": "Stripe API v2024-04-01 - Charges API & PaymentIntents",
+    "section_title": "Create a Payment Intent",
+    "content": "## Create a Payment Intent\n\nTo initiate a payment flow:\n\n```json\nPOST /v1/payment_intents\n{\n  \"amount\": 2000,\n  \"currency\": \"usd\",\n  \"automatic_payment_methods\": {\n    \"enabled\": true\n  }\n}\n```",
+    "token_count": 25,
+    "source_path": "data/docs/stripe-api/v2024-04-01/charges.md"
+  },
+  {
+    "chunk_id": "fefbdac898242f31",
+    "product_id": "stripe-api",
+    "version": "v2024-04-01",
+    "document_title": "Stripe API v2024-04-01 - Charges API & PaymentIntents",
+    "section_title": "Response",
+    "content": "### Response\n\nThe response includes a `client_secret` used by Stripe Elements on the frontend.",
+    "token_count": 14,
+    "source_path": "data/docs/stripe-api/v2024-04-01/charges.md"
+  }
+]
