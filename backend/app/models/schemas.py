@@ -36,3 +36,18 @@ class DocumentChunk(BaseModel):
     content: str = Field(..., description="Text content of the chunk")
     token_count: int = Field(..., description="Word/token count estimation")
     source_path: str = Field(..., description="Relative file path to source document")
+
+
+class SearchQuery(BaseModel):
+    product_id: str = Field(..., description="Target product identifier")
+    version: str = Field(..., description="Target product version tag")
+    query: str = Field(..., description="Developer natural language query")
+    top_k: int = Field(3, description="Maximum number of chunks to retrieve")
+    min_score_threshold: float = Field(0.15, description="Minimum relevance score threshold")
+
+
+class SearchResult(BaseModel):
+    chunk: DocumentChunk = Field(..., description="Matched document chunk")
+    score: float = Field(..., description="Normalized relevance score between 0.0 and 1.0")
+    is_exact_match: bool = Field(False, description="Flag indicating high-confidence exact section or title match")
+
