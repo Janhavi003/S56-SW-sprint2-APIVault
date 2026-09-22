@@ -7,13 +7,24 @@ function Header({ activePage = 'ask' }) {
       </div>
 
       <nav className="navigation">
-        <a className={activePage === 'ask' ? 'active' : ''} href="#ask">
+        <a
+          className={activePage === 'ask' ? 'active' : ''}
+          href="#ask"
+        >
           Ask Question
         </a>
-        <a className={activePage === 'history' ? 'active' : ''} href="#history">
+
+        <a
+          className={activePage === 'history' ? 'active' : ''}
+          href="#history"
+        >
           History
         </a>
-        <a href="#documentation">
+
+        <a
+          className={activePage === 'documentation' ? 'active' : ''}
+          href="#documentation"
+        >
           Documentation
         </a>
       </nav>
@@ -22,6 +33,7 @@ function Header({ activePage = 'ask' }) {
         <span className="version-pill">
           <span className="dot" /> v2.4.1
         </span>
+
         <span className="avatar">JD</span>
       </div>
     </header>

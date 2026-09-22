@@ -6,10 +6,23 @@ import QuestionInput from './components/QuestionInput'
 import ExampleQuestions from './components/ExampleQuestions'
 import Sidebar from './components/Sidebar'
 import HistoryPage from './components/HistoryPage'
+import DocumentationPage from './components/DocumentationPage'
 import './App.css'
 
 function App() {
-  const [page, setPage] = useState(window.location.hash === '#history' ? 'history' : 'ask')
+  const getPageFromHash = () => {
+    if (window.location.hash === '#history') {
+      return 'history'
+    }
+
+    if (window.location.hash === '#documentation') {
+      return 'documentation'
+    }
+
+    return 'ask'
+  }
+
+  const [page, setPage] = useState(getPageFromHash())
   const [product, setProduct] = useState('')
   const [version, setVersion] = useState('')
   const [question, setQuestion] = useState('')
@@ -18,11 +31,14 @@ function App() {
 
   useEffect(() => {
     const handleHashChange = () => {
-      setPage(window.location.hash === '#history' ? 'history' : 'ask')
+      setPage(getPageFromHash())
     }
 
     window.addEventListener('hashchange', handleHashChange)
-    return () => window.removeEventListener('hashchange', handleHashChange)
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange)
+    }
   }, [])
 
   const handleAskQuestion = () => {
@@ -68,6 +84,8 @@ function App() {
 
       {page === 'history' ? (
         <HistoryPage />
+      ) : page === 'documentation' ? (
+        <DocumentationPage />
       ) : (
         <div className="page-layout">
           <main className="main-content">

@@ -450,6 +450,7 @@
 }
 
 /* History page */
+
 .history-page {
   width: min(860px, calc(100% - 60px));
   margin: 0 auto;
@@ -609,8 +610,152 @@
   color: #4f5361;
 }
 
+/* Documentation page */
+
+.documentation-page {
+  width: min(860px, calc(100% - 60px));
+  margin: 0 auto;
+  padding: 52px 0 100px;
+}
+
+.documentation-header {
+  margin-bottom: 42px;
+}
+
+.documentation-header h1 {
+  margin: 0 0 8px;
+  color: #eef0f5;
+  font-size: 26px;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+
+.documentation-header p {
+  margin: 0;
+  color: #777b89;
+  font-size: 14px;
+}
+
+.documentation-section-label {
+  margin-bottom: 16px;
+  color: #666b7a;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+}
+
+.documentation-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.documentation-card {
+  min-height: 150px;
+  padding: 18px;
+  border: 1px solid #272a33;
+  border-radius: 5px;
+  background: #111319;
+}
+
+.documentation-card:hover {
+  border-color: #353947;
+  background: #13151c;
+}
+
+.documentation-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.documentation-icon {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border: 1px solid #292c36;
+  border-radius: 5px;
+  background: #191b23;
+  color: #d6a83d;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.documentation-product-info {
+  min-width: 0;
+}
+
+.documentation-product-info h2 {
+  margin: 1px 0 5px;
+  color: #e5e7eb;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.documentation-product-info p {
+  margin: 0;
+  color: #666b7a;
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.documentation-versions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 18px;
+}
+
+.documentation-version {
+  padding: 5px 7px;
+  border: 1px solid #292c36;
+  border-radius: 3px;
+  background: #191b23;
+  color: #858998;
+  font-size: 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.documentation-version.latest {
+  border-color: #332b17;
+  background: #2b2412;
+  color: #d6a83d;
+}
+
+.documentation-note {
+  margin-top: 34px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  border: 1px solid #292c36;
+  border-radius: 5px;
+  background: #111319;
+}
+
+.documentation-note-icon {
+  flex: 0 0 auto;
+  color: #d6a83d;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.documentation-note p {
+  margin: 0;
+  color: #666b7a;
+  font-size: 9px;
+  line-height: 1.6;
+}
+
+.documentation-note strong {
+  color: #8f93a1;
+  font-weight: 500;
+}
+
 @media (max-width: 700px) {
-  .history-page {
+  .history-page,
+  .documentation-page {
     width: min(860px, calc(100% - 32px));
     padding-top: 32px;
   }
@@ -619,11 +764,13 @@
     margin-bottom: 30px;
   }
 
-  .history-heading h1 {
+  .history-heading h1,
+  .documentation-header h1 {
     font-size: 24px;
   }
 
-  .history-heading p {
+  .history-heading p,
+  .documentation-header p {
     font-size: 12px;
   }
 
@@ -640,5 +787,23 @@
     gap: 12px;
     margin-top: 50px;
     overflow-x: auto;
+  }
+
+  .documentation-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .documentation-card {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 560px) {
+  .documentation-page {
+    width: calc(100% - 32px);
+  }
+
+  .documentation-note {
+    padding: 12px;
   }
 }
