@@ -81,15 +81,6 @@ function HistoryPage() {
         </div>
       </section>
 
-      <div className="history-state-strip" aria-label="Demo states">
-        <span className="state-label">demo</span>
-        <a href="#ask">Ask</a>
-        <span>Loading</span>
-        <span>Answer</span>
-        <span>Source</span>
-        <span>No Docs</span>
-        <span>Error</span>
-      </div>
     </main>
   )
 }
