@@ -7,6 +7,8 @@ import ExampleQuestions from './components/ExampleQuestions'
 import Sidebar from './components/Sidebar'
 import HistoryPage from './components/HistoryPage'
 import DocumentationPage from './components/DocumentationPage'
+import AnswerSourcePage from './components/AnswerSourcePage'
+import StateNavigator from './components/StateNavigator'
 import './App.css'
 
 function App() {
@@ -17,6 +19,10 @@ function App() {
 
     if (window.location.hash === '#documentation') {
       return 'documentation'
+    }
+
+    if (window.location.hash === '#answer') {
+      return 'answer'
     }
 
     return 'ask'
@@ -58,6 +64,7 @@ function App() {
 
     setTimeout(() => {
       setLoading(false)
+      window.location.hash = '#answer'
     }, 1000)
   }
 
@@ -86,6 +93,12 @@ function App() {
         <HistoryPage />
       ) : page === 'documentation' ? (
         <DocumentationPage />
+      ) : page === 'answer' ? (
+        <AnswerSourcePage
+          product={product}
+          version={version}
+          question={question}
+        />
       ) : (
         <div className="page-layout">
           <main className="main-content">
@@ -152,6 +165,8 @@ function App() {
           <Sidebar />
         </div>
       )}
+
+      <StateNavigator activeState={page === 'answer' ? 'Answer' : page === 'ask' ? 'Ask' : 'demo'} />
     </div>
   )
 }
