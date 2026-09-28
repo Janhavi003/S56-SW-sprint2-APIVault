@@ -2,10 +2,10 @@ function StateNavigator({ activeState = 'demo' }) {
   const states = [
     { label: 'demo', href: '#ask' },
     { label: 'Ask', href: '#ask' },
-    { label: 'Loading' },
+    { label: 'Loading', href: '#loading' },
     { label: 'Answer', href: '#answer' },
     { label: 'Source', href: '#source' },
-    { label: 'No Docs' },
+    { label: 'No Docs', href: '#no-docs' },
     { label: 'Error', href: '#error' },
   ]
 

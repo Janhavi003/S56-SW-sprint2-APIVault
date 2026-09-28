@@ -10,6 +10,8 @@ import DocumentationPage from './components/DocumentationPage'
 import AnswerSourcePage from './components/AnswerSourcePage'
 import SourcePage from './components/SourcePage'
 import ErrorPage from './components/ErrorPage'
+import LoadingPage from './components/LoadingPage'
+import NoDocsPage from './components/NoDocsPage'
 import StateNavigator from './components/StateNavigator'
 import './App.css'
 
@@ -33,6 +35,14 @@ function App() {
 
     if (window.location.hash === '#error') {
       return 'error'
+    }
+
+    if (window.location.hash === '#loading') {
+      return 'loading'
+    }
+
+    if (window.location.hash === '#no-docs') {
+      return 'no-docs'
     }
 
     return 'ask'
@@ -72,10 +82,12 @@ function App() {
       question,
     })
 
+    window.location.hash = '#loading'
+
     setTimeout(() => {
       setLoading(false)
       window.location.hash = '#answer'
-    }, 1000)
+    }, 1800)
   }
 
   const handleProductChange = (selectedProduct) => {
@@ -117,6 +129,18 @@ function App() {
         />
       ) : page === 'error' ? (
         <ErrorPage
+          product={product}
+          version={version}
+          question={question}
+        />
+      ) : page === 'loading' ? (
+        <LoadingPage
+          product={product}
+          version={version}
+          question={question}
+        />
+      ) : page === 'no-docs' ? (
+        <NoDocsPage
           product={product}
           version={version}
           question={question}
@@ -196,6 +220,10 @@ function App() {
               ? 'Source'
               : page === 'error'
                 ? 'Error'
+              : page === 'loading'
+                ? 'Loading'
+              : page === 'no-docs'
+                ? 'No Docs'
                 : page === 'ask'
                 ? 'Ask'
                 : 'demo'
