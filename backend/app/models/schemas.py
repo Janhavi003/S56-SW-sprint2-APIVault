@@ -51,3 +51,38 @@ class SearchResult(BaseModel):
     score: float = Field(..., description="Normalized relevance score between 0.0 and 1.0")
     is_exact_match: bool = Field(False, description="Flag indicating high-confidence exact section or title match")
 
+
+class SourceAttribution(BaseModel):
+    chunk_id: str = Field(..., description="Unique chunk identifier")
+    product_id: str = Field(..., description="Product slug e.g. fastapi")
+    version: str = Field(..., description="Version identifier e.g. v0.100.0")
+    document_title: str = Field(..., description="Title of parent document")
+    section_title: str = Field(..., description="Section title where chunk is located")
+    source_path: str = Field(..., description="Relative file path to source document")
+    excerpt: Optional[str] = Field(None, description="Brief snippet or excerpt from the chunk content")
+
+
+class GeneratedAnswer(BaseModel):
+    question: str = Field(..., description="Developer natural language question")
+    product_id: str = Field(..., description="Target product identifier")
+    version: str = Field(..., description="Target product version tag")
+    answer: str = Field(..., description="Grounded technical answer generated exclusively from retrieved context")
+    status: str = Field("success", description="Status flag: 'success' or 'insufficient_documentation'")
+    sources: List[SourceAttribution] = Field(default_factory=list, description="Preserved source attributions used for the answer")
+    confidence: float = Field(1.0, description="Confidence score for the answer grounding")
+
+
+class QueryRequest(BaseModel):
+    product_id: str = Field(..., min_length=1, description="Target product identifier e.g. fastapi")
+    version: str = Field(..., min_length=1, description="Target product version tag e.g. v0.100.0")
+    question: str = Field(..., min_length=1, max_length=1000, description="Technical question")
+    top_k: Optional[int] = Field(3, ge=1, le=10, description="Maximum number of chunks to retrieve")
+
+
+class HealthResponse(BaseModel):
+    status: str = Field("ok", description="API health status")
+    app: str = Field("APIVault", description="Application name")
+    version: str = Field("1.0.0", description="API version")
+
+
+

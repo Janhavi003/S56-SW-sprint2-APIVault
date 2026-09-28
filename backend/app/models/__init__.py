@@ -5,6 +5,10 @@ from .schemas import (
     DocumentChunk,
     SearchQuery,
     SearchResult,
+    SourceAttribution,
+    GeneratedAnswer,
+    QueryRequest,
+    HealthResponse,
 )
 
 __all__ = [
@@ -14,4 +18,10 @@ __all__ = [
     "DocumentChunk",
     "SearchQuery",
     "SearchResult",
+    "SourceAttribution",
+    "GeneratedAnswer",
+    "QueryRequest",
+    "HealthResponse",
 ]
+
+
