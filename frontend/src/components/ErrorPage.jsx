@@ -1,7 +1,7 @@
-function ErrorPage({ product, version, question }) {
+function ErrorPage({ product, version, question, errorMessage }) {
   const selectedProduct = product || 'FastAPI'
-  const selectedVersion = version || 'v0.115.0'
-  const selectedQuestion = question || 'How do I create a POST endpoint with request body validation?'
+  const selectedVersion = version || 'v0.110.0'
+  const selectedQuestion = question || 'Ask a documentation question.'
 
   const handleRetry = () => {
     window.location.hash = '#ask'
@@ -20,7 +20,7 @@ function ErrorPage({ product, version, question }) {
           <div className="error-label">REQUEST ERROR</div>
           <h1>Something went wrong</h1>
           <p>
-            An unexpected error occurred while processing your request. The documentation service could not complete the search right now.
+            {errorMessage || 'The documentation service could not complete the request. Check that the backend is running and try again.'}
           </p>
 
           <div className="error-question">

@@ -1,13 +1,13 @@
-const defaultQuestion = 'How do I create a POST endpoint with request body validation?'
-
-function AnswerSourcePage({ product, version, question }) {
-  const selectedProduct = product || 'FastAPI'
-  const selectedVersion = version || 'v0.115.0'
-  const selectedQuestion = question || defaultQuestion
+function AnswerSourcePage({ product, version, question, answerData }) {
+  const selectedProduct = product || answerData?.product_id || 'FastAPI'
+  const selectedVersion = version || answerData?.version || 'v0.110.0'
+  const selectedQuestion = question || answerData?.question || 'Ask a documentation question.'
+  const sources = answerData?.sources || []
+  const answer = answerData?.answer || 'No answer data is available yet.'
 
   return (
     <main className="answer-source-page">
-      <div className="answer-breadcrumb">‹ Answer / Source #1</div>
+      <div className="answer-breadcrumb">Answer / {sources.length || 0} source{sources.length === 1 ? '' : 's'}</div>
 
       <section className="source-summary-card">
         <div className="source-summary-top">
@@ -19,63 +19,44 @@ function AnswerSourcePage({ product, version, question }) {
             </div>
           </div>
 
-          <a
-            className="open-docs-button"
-            href="https://fastapi.tiangolo.com/tutorial/first-steps/"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Open Docs ↗
+          <a className="open-docs-button" href="#source">
+            View Source ↗
           </a>
         </div>
 
         <div className="source-meta-row">
-          <span>Official Docs</span>
-          <span>§ First Steps → Path Operation Decorators</span>
-          <span className="source-match">75% match</span>
+          <span>Version-grounded answer</span>
+          <span>{sources.length} supporting source{sources.length === 1 ? '' : 's'}</span>
+          <span className="source-match">
+            {answerData?.confidence != null
+              ? `${Math.round(answerData.confidence * 100)}% confidence`
+              : 'Grounded'}
+          </span>
         </div>
 
         <div className="source-url-row">
-          https://fastapi.tiangolo.com/tutorial/first-steps/
-          <span>Published September 20, 2024</span>
+          {sources[0]?.source_path || 'Source path will appear here'}
+          <span>{selectedVersion}</span>
         </div>
       </section>
 
       <div className="source-notice">
         <span className="source-notice-icon">ⓘ</span>
         <p>
-          The content below is the original documentation excerpt retrieved and indexed by APIVault. It is shown in-source — not AI-generated output.
+          This answer is generated only from documentation retrieved for the selected product and version.
         </p>
       </div>
 
       <article className="documentation-excerpt">
         <div className="excerpt-heading">
-          <span>Original Documentation — Path Operation Decorators</span>
-          <span className="excerpt-badge">CRITICAL DOC</span>
+          <span>Grounded Answer</span>
+          <span className="excerpt-badge">SOURCE GROUNDED</span>
         </div>
 
         <div className="excerpt-content">
-          <h2>Overview</h2>
-          <p>
-            FastAPI provides automatic request body validation using Python type hints and Pydantic models. The path operation function receives the validated model instance, and FastAPI generates the corresponding OpenAPI schema.
-          </p>
-
-          <h2>Declaring a POST route</h2>
-          <p>
-            To declare a POST endpoint, define the request body with a Pydantic model. FastAPI reads the model schema, validates the incoming JSON, and injects the parsed instance into the path operation function.
-          </p>
-
-          <pre className="code-block"><code>{`@app.post("/items/", status_code=201)\nasync def create_item(item: Item):\n    return item`}</code></pre>
-
-          <h2>Validation errors</h2>
-          <p>
-            If the request body does not match the model schema, FastAPI returns a validation error response with the failing field, its location in the request, and the validation message.
-          </p>
-
-          <h2>Response model filtering</h2>
-          <p>
-            Response models can also validate and filter the response. FastAPI serializes the returned value to match the declared model and excludes fields that are not part of the response schema.
-          </p>
+          {answer.split('\n').map((line, index) =>
+            line.trim() ? <p key={`${line}-${index}`}>{line}</p> : null
+          )}
         </div>
       </article>
 
@@ -84,7 +65,23 @@ function AnswerSourcePage({ product, version, question }) {
         <p>{selectedQuestion}</p>
       </div>
 
-      <a className="back-to-answer" href="#ask">‹ Back to Answer</a>
+      <section className="source-list">
+        <div className="section-label">SUPPORTING SOURCES</div>
+        {sources.length === 0 ? (
+          <p>No supporting source was returned.</p>
+        ) : (
+          sources.map((source) => (
+            <article className="source-card" key={source.chunk_id}>
+              <strong>{source.document_title}</strong>
+              <span>{source.section_title}</span>
+              <code>{source.source_path}</code>
+              {source.excerpt && <p>{source.excerpt}</p>}
+            </article>
+          ))
+        )}
+      </section>
+
+      <a className="back-to-answer" href="#ask">‹ Back to Ask Question</a>
     </main>
   )
 }
