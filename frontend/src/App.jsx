@@ -13,31 +13,40 @@ import ErrorPage from './components/ErrorPage'
 import LoadingPage from './components/LoadingPage'
 import NoDocsPage from './components/NoDocsPage'
 import StateNavigator from './components/StateNavigator'
+import { getProducts, queryDocumentation } from './api'
 import './App.css'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+const savedQuery = () => {
+  try {
+    return JSON.parse(sessionStorage.getItem('apivault-query') || 'null')
+  } catch {
+    return null
+  }
+}
+
+const getPageFromHash = () => {
+  if (window.location.hash === '#history') return 'history'
+  if (window.location.hash === '#documentation') return 'documentation'
+  if (window.location.hash === '#answer') return 'answer'
+  if (window.location.hash === '#source') return 'source'
+  if (window.location.hash === '#error') return 'error'
+  if (window.location.hash === '#loading') return 'loading'
+  if (window.location.hash === '#no-docs') return 'no-docs'
+  return 'ask'
+}
 
 function App() {
-  const getPageFromHash = () => {
-    if (window.location.hash === '#history') return 'history'
-    if (window.location.hash === '#documentation') return 'documentation'
-    if (window.location.hash === '#answer') return 'answer'
-    if (window.location.hash === '#source') return 'source'
-    if (window.location.hash === '#error') return 'error'
-    if (window.location.hash === '#loading') return 'loading'
-    if (window.location.hash === '#no-docs') return 'no-docs'
-    return 'ask'
-  }
+  const saved = savedQuery()
 
   const [page, setPage] = useState(getPageFromHash())
   const [products, setProducts] = useState([])
-  const [product, setProduct] = useState('')
-  const [version, setVersion] = useState('')
-  const [question, setQuestion] = useState('')
+  const [product, setProduct] = useState(saved?.product || '')
+  const [version, setVersion] = useState(saved?.version || '')
+  const [question, setQuestion] = useState(saved?.question || '')
   const [error, setError] = useState('')
-  const [errorMessage, setErrorMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState(saved?.errorMessage || '')
   const [loading, setLoading] = useState(false)
-  const [answerData, setAnswerData] = useState(null)
+  const [answerData, setAnswerData] = useState(saved?.answerData || null)
 
   useEffect(() => {
     const handleHashChange = () => setPage(getPageFromHash())
@@ -48,10 +57,8 @@ function App() {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/products`)
-        if (!response.ok) throw new Error(`Products request failed (${response.status})`)
-        const data = await response.json()
-        setProducts(data)
+        const data = await getProducts()
+        setProducts(Array.isArray(data) ? data : [])
       } catch (requestError) {
         setErrorMessage(requestError.message)
       }
@@ -60,10 +67,22 @@ function App() {
     loadProducts()
   }, [])
 
+  useEffect(() => {
+    sessionStorage.setItem(
+      'apivault-query',
+      JSON.stringify({ product, version, question, answerData, errorMessage })
+    )
+  }, [product, version, question, answerData, errorMessage])
+
   const selectedProduct = useMemo(
     () => products.find((item) => item.id === product),
     [products, product]
   )
+
+  const resetResult = () => {
+    setAnswerData(null)
+    setErrorMessage('')
+  }
 
   const handleAskQuestion = async () => {
     if (!product || !version || !question.trim()) {
@@ -71,30 +90,26 @@ function App() {
       return
     }
 
+    const versionExists = selectedProduct?.versions?.some((item) => item.version === version)
+    if (!versionExists) {
+      setError('Select a valid version for the selected product.')
+      return
+    }
+
     setError('')
     setErrorMessage('')
     setLoading(true)
-    setAnswerData(null)
+    resetResult()
     window.location.hash = '#loading'
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/query`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          product_id: product,
-          version,
-          question: question.trim(),
-          top_k: 3,
-        }),
+      const data = await queryDocumentation({
+        productId: product,
+        version,
+        question: question.trim(),
+        topK: 3,
       })
 
-      if (!response.ok) {
-        const detail = await response.text()
-        throw new Error(detail || `Query request failed (${response.status})`)
-      }
-
-      const data = await response.json()
       setAnswerData(data)
 
       if (data.status === 'insufficient_documentation') {
@@ -114,6 +129,7 @@ function App() {
     setProduct(selectedProduct)
     setVersion('')
     setError('')
+    resetResult()
   }
 
   const handleExampleSelect = (selectedQuestion, selectedProductName, selectedVersion) => {
@@ -122,9 +138,28 @@ function App() {
     setProduct(selected?.id || '')
     setVersion(selectedVersion)
     setError('')
+    resetResult()
   }
 
   const displayProductName = selectedProduct?.name || product
+
+  const handleRetry = () => {
+    window.location.hash = '#ask'
+  }
+
+  const state = page === 'answer'
+    ? 'Answer'
+    : page === 'source'
+      ? 'Source'
+      : page === 'error'
+        ? 'Error'
+        : page === 'loading'
+          ? 'Loading'
+          : page === 'no-docs'
+            ? 'No Docs'
+            : page === 'ask'
+              ? 'Ask'
+              : 'demo'
 
   return (
     <div className="app-shell">
@@ -154,12 +189,14 @@ function App() {
           version={version}
           question={question}
           errorMessage={errorMessage}
+          onRetry={handleRetry}
         />
       ) : page === 'loading' ? (
         <LoadingPage
           product={displayProductName}
           version={version}
           question={question}
+          isLoading={loading}
         />
       ) : page === 'no-docs' ? (
         <NoDocsPage
@@ -214,7 +251,7 @@ function App() {
                 <button
                   className="ask-button"
                   onClick={handleAskQuestion}
-                  disabled={loading}
+                  disabled={loading || !products.length}
                 >
                   {loading ? 'Asking...' : '⌕ Ask Question'}
                 </button>
@@ -235,23 +272,7 @@ function App() {
         </div>
       )}
 
-      <StateNavigator
-        activeState={
-          page === 'answer'
-            ? 'Answer'
-            : page === 'source'
-              ? 'Source'
-              : page === 'error'
-                ? 'Error'
-                : page === 'loading'
-                  ? 'Loading'
-                  : page === 'no-docs'
-                    ? 'No Docs'
-                    : page === 'ask'
-                      ? 'Ask'
-                      : 'demo'
-        }
-      />
+      <StateNavigator activeState={state} />
     </div>
   )
 }

@@ -1,4 +1,4 @@
-function LoadingPage({ product, version, question }) {
+function LoadingPage({ product, version, question, isLoading = true }) {
   const selectedProduct = product || 'FastAPI'
   const selectedVersion = version || 'v0.115.0'
   const selectedQuestion = question || 'How do I create a POST endpoint with request body validation?'
@@ -28,7 +28,7 @@ function LoadingPage({ product, version, question }) {
           {steps.map((step) => (
             <div className={`loading-step ${step.status}`} key={step.label}>
               <span className="loading-step-indicator" aria-hidden="true">
-                {step.status === 'complete' ? '✓' : step.status === 'active' ? '•' : ''}
+                {step.status === 'complete' ? '✓' : step.status === 'active' && isLoading ? '•' : ''}
               </span>
               <span>{step.label}</span>
             </div>
