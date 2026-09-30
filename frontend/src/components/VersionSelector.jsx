@@ -1,14 +1,6 @@
-function VersionSelector({ product, version, onVersionChange }) {
-  const versionsByProduct = {
-    FastAPI: ['v0.115'],
-    'Next.js': ['v15.1'],
-    PostgreSQL: ['v16.3'],
-    Redis: ['v7.4'],
-    Kubernetes: ['v1.31'],
-    'Stripe API': ['2024-11'],
-  }
-
-  const versions = versionsByProduct[product] || []
+function VersionSelector({ product, products, version, onVersionChange }) {
+  const selectedProduct = products.find((item) => item.id === product)
+  const versions = selectedProduct?.versions || []
 
   return (
     <div className="field">
@@ -25,8 +17,8 @@ function VersionSelector({ product, version, onVersionChange }) {
         </option>
 
         {versions.map((item) => (
-          <option key={item} value={item}>
-            {item}
+          <option key={item.version} value={item.version}>
+            {item.version}
           </option>
         ))}
       </select>

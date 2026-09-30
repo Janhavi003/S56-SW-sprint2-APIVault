@@ -1,9 +1,13 @@
-function ErrorPage({ product, version, question, errorMessage }) {
+function ErrorPage({ product, version, question, errorMessage, onRetry }) {
   const selectedProduct = product || 'FastAPI'
   const selectedVersion = version || 'v0.110.0'
   const selectedQuestion = question || 'Ask a documentation question.'
 
   const handleRetry = () => {
+    if (onRetry) {
+      onRetry()
+      return
+    }
     window.location.hash = '#ask'
   }
 

@@ -1,2 +1,21 @@
-function ProductSelector({ product, onProductChange }) { return <div className="field"><label htmlFor="product">Product</label><select id="product" value={product} onChange={e=>onProductChange(e.target.value)}><option value="">Select product</option><option>FastAPI</option><option>Next.js</option><option>PostgreSQL</option><option>Redis</option><option>Kubernetes</option><option>Stripe API</option></select></div> }
+function ProductSelector({ product, products, onProductChange }) {
+  return (
+    <div className="field">
+      <label htmlFor="product">Product</label>
+      <select
+        id="product"
+        value={product}
+        onChange={(event) => onProductChange(event.target.value)}
+      >
+        <option value="">Select product</option>
+        {products.map((item) => (
+          <option key={item.id} value={item.id}>
+            {item.name}
+          </option>
+        ))}
+      </select>
+    </div>
+  )
+}
+
 export default ProductSelector

@@ -1,3 +1,29 @@
-const examples=[['FastAPI','v0.115','How do I create a POST endpoint with request body validation?'],['Next.js','v15.1','What breaking changes were introduced in the App Router in v15?'],['PostgreSQL','v16.3','How do I configure logical replication for change data capture?'],['Redis','v7.4','What is the difference between EXPIRE and EXPIREAT?'],['Kubernetes','v1.31','How do I configure a HorizontalPodAutoscaler with custom metrics?'],['Stripe API','2024-11','How do I handle webhook signature verification?']]
-function ExampleQuestions({onSelect}){return <section className="examples"><div className="section-label">EXAMPLE QUESTIONS</div><div className="example-list">{examples.map(([p,v,q])=><button className="example-row" key={q} onClick={()=>onSelect(q,p,v)}><span className="tag">{p}</span><span className="version-tag">{v}</span><span className="example-text">{q}</span></button>)}</div></section>}
+const examples = [
+  ['FastAPI', 'v0.100.0', 'How do I create a POST endpoint with request body validation?'],
+  ['FastAPI', 'v0.110.0', 'How do I define path operation decorators?'],
+  ['Stripe API', 'v2023-10-16', 'How do I work with charges?'],
+  ['Stripe API', 'v2024-04-01', 'How do I create and retrieve charges?'],
+]
+
+function ExampleQuestions({ onSelect }) {
+  return (
+    <section className="examples">
+      <div className="section-label">EXAMPLE QUESTIONS</div>
+      <div className="example-list">
+        {examples.map(([product, version, question]) => (
+          <button
+            className="example-row"
+            key={question}
+            onClick={() => onSelect(question, product, version)}
+          >
+            <span className="tag">{product}</span>
+            <span className="version-tag">{version}</span>
+            <span className="example-text">{question}</span>
+          </button>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 export default ExampleQuestions
