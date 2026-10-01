@@ -1,4 +1,4 @@
-function Header({ activePage = 'ask' }) {
+function Header({ activePage = 'ask', apiStatus = 'checking' }) {
   return (
     <header className="app-header">
       <div className="brand">
@@ -30,6 +30,11 @@ function Header({ activePage = 'ask' }) {
       </nav>
 
       <div className="header-meta">
+        <span className={`api-status-pill ${apiStatus}`}>
+          <span className="api-status-dot" />
+          {apiStatus === 'connected' ? 'API Connected' : apiStatus === 'disconnected' ? 'API Offline' : 'API Checking'}
+        </span>
+
         <span className="version-pill">
           <span className="dot" /> v2.4.1
         </span>
