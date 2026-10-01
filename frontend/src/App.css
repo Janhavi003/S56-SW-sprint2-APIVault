@@ -1478,3 +1478,36 @@
     flex-direction: column;
   }
 }
+
+.api-status-pill {
+  padding: 5px 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid #252832;
+  border-radius: 5px;
+  color: #777b8d;
+  font-size: 9px;
+  letter-spacing: 0.02em;
+}
+
+.api-status-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #777b8d;
+}
+
+.api-status-pill.connected .api-status-dot {
+  background: #19c37d;
+}
+
+.api-status-pill.disconnected .api-status-dot {
+  background: #e87878;
+}
+
+.api-status-message {
+  margin-top: 9px;
+  color: #777b8d;
+  font-size: 9px;
+}

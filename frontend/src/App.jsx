@@ -13,7 +13,7 @@ import ErrorPage from './components/ErrorPage'
 import LoadingPage from './components/LoadingPage'
 import NoDocsPage from './components/NoDocsPage'
 import StateNavigator from './components/StateNavigator'
-import { getProducts, queryDocumentation } from './api'
+import { checkHealth, getProducts, queryDocumentation } from './api'
 import './App.css'
 
 const savedQuery = () => {
@@ -40,6 +40,7 @@ function App() {
 
   const [page, setPage] = useState(getPageFromHash())
   const [products, setProducts] = useState([])
+  const [apiStatus, setApiStatus] = useState('checking')
   const [product, setProduct] = useState(saved?.product || '')
   const [version, setVersion] = useState(saved?.version || '')
   const [question, setQuestion] = useState(saved?.question || '')
@@ -55,16 +56,21 @@ function App() {
   }, [])
 
   useEffect(() => {
-    const loadProducts = async () => {
+    const loadBackendData = async () => {
+      setApiStatus('checking')
       try {
-        const data = await getProducts()
+        const [, data] = await Promise.all([checkHealth(), getProducts()])
         setProducts(Array.isArray(data) ? data : [])
+        setApiStatus('connected')
+        setErrorMessage('')
       } catch (requestError) {
+        setApiStatus('disconnected')
+        setProducts([])
         setErrorMessage(requestError.message)
       }
     }
 
-    loadProducts()
+    loadBackendData()
   }, [])
 
   useEffect(() => {
@@ -163,7 +169,7 @@ function App() {
 
   return (
     <div className="app-shell">
-      <Header activePage={page} />
+      <Header activePage={page} apiStatus={apiStatus} />
 
       {page === 'history' ? (
         <HistoryPage />
@@ -251,16 +257,19 @@ function App() {
                 <button
                   className="ask-button"
                   onClick={handleAskQuestion}
-                  disabled={loading || !products.length}
+                  disabled={loading || !products.length || apiStatus !== 'connected'}
                 >
                   {loading ? 'Asking...' : '⌕ Ask Question'}
                 </button>
               </div>
 
               {error && <div className="form-error">{error}</div>}
-              {!products.length && (
+              {apiStatus === 'checking' && (
+                <div className="api-status-message">Connecting to APIVault backend...</div>
+              )}
+              {apiStatus === 'disconnected' && (
                 <div className="form-error">
-                  Unable to load products. Make sure the backend is running.
+                  Backend unavailable. Start the API on port 8000 and refresh the page.
                 </div>
               )}
             </section>
