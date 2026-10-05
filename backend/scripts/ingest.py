@@ -17,6 +17,7 @@ if str(backend_dir) not in sys.path:
 
 from app.models.schemas import ProductMetadata
 from app.services.chunker import MarkdownChunker
+from app.services.data_validator import validate_product_registry
 
 
 def run_ingestion():
@@ -31,6 +32,15 @@ def run_ingestion():
 
     with open(products_file, "r", encoding="utf-8") as f:
         products_data = json.load(f)
+
+    try:
+        validation_messages = validate_product_registry(products_file, data_dir)
+    except ValueError as exc:
+        print(f"ERROR: Documentation registry validation failed:\n{exc}")
+        sys.exit(1)
+
+    for message in validation_messages:
+        print(f"[Validation] {message}")
 
     products = [ProductMetadata(**p) for p in products_data]
     chunker = MarkdownChunker(max_chunk_words=200, overlap_words=25)
