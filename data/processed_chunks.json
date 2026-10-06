@@ -1,5 +1,55 @@
 [
   {
+    "chunk_id": "3e4efa752bf18142",
+    "product_id": "fastapi",
+    "version": "v0.100.0",
+    "document_title": "FastAPI v0.100.0 - Dependency Injection",
+    "section_title": "Basic Dependencies with Depends",
+    "content": "## Basic Dependencies with Depends\n\nFastAPI provides a powerful Dependency Injection system using the `Depends` function. You can declare dependencies as function parameters.\n\n```python\nfrom fastapi import Depends, FastAPI\n\napp = FastAPI()\n\ndef common_parameters(q: str = None, skip: int = 0, limit: int = 100):\n    return {\"q\": q, \"skip\": skip, \"limit\": limit}\n\n@app.get(\"/items/\")\ndef read_items(commons: dict = Depends(common_parameters)):\n    return commons\n```\n\nIn FastAPI v0.100.0, dependencies are declared directly with default arguments assigning `Depends(dependency_function)`.",
+    "token_count": 73,
+    "source_path": "data/docs/fastapi/v0.100.0/dependencies.md"
+  },
+  {
+    "chunk_id": "521b963a81c657ee",
+    "product_id": "fastapi",
+    "version": "v0.100.0",
+    "document_title": "FastAPI v0.100.0 - Dependency Injection",
+    "section_title": "Yield Dependencies and Clean-up",
+    "content": "## Yield Dependencies and Clean-up\n\nTo execute code before and after a request (such as opening and closing a database session), use standard Python generators with `yield`.\n\n```python\nfrom fastapi import Depends\n\ndef get_db():\n    db = DBSession()\n    try:\n        yield db\n    finally:\n        db.close()\n```\n\nThe code prior to `yield` runs before the route handler, and the code inside `finally` runs after the response is delivered.",
+    "token_count": 64,
+    "source_path": "data/docs/fastapi/v0.100.0/dependencies.md"
+  },
+  {
+    "chunk_id": "6a081bfece4faa08",
+    "product_id": "fastapi",
+    "version": "v0.100.0",
+    "document_title": "FastAPI v0.100.0 - Dependency Injection",
+    "section_title": "Dependency Overrides for Testing",
+    "content": "## Dependency Overrides for Testing\n\nDuring testing, you can override dependencies on the application instance using `app.dependency_overrides`.\n\n```python\nfrom fastapi.testclient import TestClient\n\ndef override_get_db():\n    return TestingSessionLocal()\n\napp.dependency_overrides[get_db] = override_get_db\n```",
+    "token_count": 30,
+    "source_path": "data/docs/fastapi/v0.100.0/dependencies.md"
+  },
+  {
+    "chunk_id": "fb1539244a6a3879",
+    "product_id": "fastapi",
+    "version": "v0.100.0",
+    "document_title": "FastAPI v0.100.0 - Response Models and Status Codes",
+    "section_title": "Response Model Declaration",
+    "content": "## Response Model Declaration\n\nIn FastAPI v0.100.0, use the `response_model` argument in route decorators to filter output data and validate responses.\n\n```python\nfrom fastapi import FastAPI\nfrom pydantic import BaseModel\n\napp = FastAPI()\n\nclass ItemOut(BaseModel):\n    name: str\n    price: float\n\n@app.post(\"/items/\", response_model=ItemOut)\ndef create_item(item: ItemOut):\n    return item\n```\n\nThe response model enforces output validation using Pydantic v1 schemas.",
+    "token_count": 57,
+    "source_path": "data/docs/fastapi/v0.100.0/responses.md"
+  },
+  {
+    "chunk_id": "4f4464807642d41c",
+    "product_id": "fastapi",
+    "version": "v0.100.0",
+    "document_title": "FastAPI v0.100.0 - Response Models and Status Codes",
+    "section_title": "Response Status Codes and Exceptions",
+    "content": "## Response Status Codes and Exceptions\n\nSet default HTTP status codes on endpoint decorators, and raise `HTTPException` for error conditions.\n\n```python\nfrom fastapi import FastAPI, HTTPException, status\n\napp = FastAPI()\n\n@app.get(\"/items/{item_id}\", status_code=status.HTTP_200_OK)\ndef get_item(item_id: int):\n    if item_id not in [1, 2, 3]:\n        raise HTTPException(\n            status_code=status.HTTP_404_NOT_FOUND,\n            detail=\"Item not found\"\n        )\n    return {\"item_id\": item_id}\n```",
+    "token_count": 53,
+    "source_path": "data/docs/fastapi/v0.100.0/responses.md"
+  },
+  {
     "chunk_id": "4c8809bf0616eaa5",
     "product_id": "fastapi",
     "version": "v0.100.0",
@@ -28,6 +78,76 @@
     "content": "### Data Validation\n\nData validation is performed automatically by Pydantic v1 in FastAPI v0.100.0. If you pass an invalid type like `http://127.0.0.1:8000/items/foo`, HTTP 422 Unprocessable Entity is returned.",
     "token_count": 28,
     "source_path": "data/docs/fastapi/v0.100.0/routing.md"
+  },
+  {
+    "chunk_id": "b5abfc352168107a",
+    "product_id": "fastapi",
+    "version": "v0.110.0",
+    "document_title": "FastAPI v0.110.0 - Dependency Injection & Lifespan",
+    "section_title": "Annotated Dependencies",
+    "content": "## Annotated Dependencies\n\nFastAPI v0.110.0 recommends declaring dependencies with `typing.Annotated`. This avoids code duplication and improves static analysis support.\n\n```python\nfrom typing import Annotated\nfrom fastapi import Depends, FastAPI\n\napp = FastAPI()\n\ndef common_parameters(q: str | None = None, skip: int = 0, limit: int = 100):\n    return {\"q\": q, \"skip\": skip, \"limit\": limit}\n\nCommonsDep = Annotated[dict, Depends(common_parameters)]\n\n@app.get(\"/items/\")\ndef read_items(commons: CommonsDep):\n    return commons\n```",
+    "token_count": 65,
+    "source_path": "data/docs/fastapi/v0.110.0/dependencies.md"
+  },
+  {
+    "chunk_id": "ea91210a9fac1489",
+    "product_id": "fastapi",
+    "version": "v0.110.0",
+    "document_title": "Startup logic",
+    "section_title": "Lifespan Events Context Manager",
+    "content": "## Lifespan Events Context Manager\n\nIn FastAPI v0.110.0, the legacy `@app.on_event(\"startup\")` and `@app.on_event(\"shutdown\")` decorators are replaced by the `lifespan` context manager.\n\n```python\nfrom contextlib import asynccontextmanager\nfrom fastapi import FastAPI\n\n@asynccontextmanager\nasync def lifespan(app: FastAPI):",
+    "token_count": 35,
+    "source_path": "data/docs/fastapi/v0.110.0/dependencies.md"
+  },
+  {
+    "chunk_id": "d792244265bb8a40",
+    "product_id": "fastapi",
+    "version": "v0.110.0",
+    "document_title": "Shutdown logic",
+    "section_title": "Startup logic",
+    "content": "print(\"Database pool initialized\")\n    yield",
+    "token_count": 4,
+    "source_path": "data/docs/fastapi/v0.110.0/dependencies.md"
+  },
+  {
+    "chunk_id": "0d438ac2c30ac0ce",
+    "product_id": "fastapi",
+    "version": "v0.110.0",
+    "document_title": "Shutdown logic",
+    "section_title": "Shutdown logic",
+    "content": "print(\"Database pool closed\")\n\napp = FastAPI(lifespan=lifespan)\n```",
+    "token_count": 7,
+    "source_path": "data/docs/fastapi/v0.110.0/dependencies.md"
+  },
+  {
+    "chunk_id": "1e883ef39655c9df",
+    "product_id": "fastapi",
+    "version": "v0.110.0",
+    "document_title": "Shutdown logic",
+    "section_title": "Global Dependencies with Dependencies Parameter",
+    "content": "## Global Dependencies with Dependencies Parameter\n\nYou can add global dependencies to the entire FastAPI application or APIRouter:\n\n```python\nfrom fastapi import FastAPI, Depends\n\napp = FastAPI(dependencies=[Depends(verify_token), Depends(verify_key)])\n```",
+    "token_count": 29,
+    "source_path": "data/docs/fastapi/v0.110.0/dependencies.md"
+  },
+  {
+    "chunk_id": "1a74e5fe5f82878d",
+    "product_id": "fastapi",
+    "version": "v0.110.0",
+    "document_title": "FastAPI v0.110.0 - Response Models & Return Type Annotations",
+    "section_title": "Automatic Response Model Inference",
+    "content": "## Automatic Response Model Inference\n\nIn FastAPI v0.110.0, function return type annotations are automatically used as the `response_model`, simplifying endpoint signatures.\n\n```python\nfrom fastapi import FastAPI\nfrom pydantic import BaseModel\n\napp = FastAPI()\n\nclass Item(BaseModel):\n    name: str\n    price: float\n\n@app.get(\"/items/{item_id}\")\ndef get_item(item_id: int) -> Item:\n    return Item(name=\"Widget\", price=19.99)\n```\n\nFastAPI uses Pydantic v2 under the hood to automatically filter output fields and validate the response structure.",
+    "token_count": 66,
+    "source_path": "data/docs/fastapi/v0.110.0/responses.md"
+  },
+  {
+    "chunk_id": "2f0a704ee11bb904",
+    "product_id": "fastapi",
+    "version": "v0.110.0",
+    "document_title": "FastAPI v0.110.0 - Response Models & Return Type Annotations",
+    "section_title": "JSONResponse with Pydantic v2 Serialization",
+    "content": "## JSONResponse with Pydantic v2 Serialization\n\nFastAPI v0.110.0 provides high-performance JSON serialization using Pydantic v2 `model_dump(mode='json')`.\n\n```python\nfrom fastapi.responses import JSONResponse\n\n@app.get(\"/custom-response\")\ndef custom_response():\n    data = {\"status\": \"ok\", \"version\": \"v0.110.0\"}\n    return JSONResponse(content=data, status_code=200)\n```",
+    "token_count": 34,
+    "source_path": "data/docs/fastapi/v0.110.0/responses.md"
   },
   {
     "chunk_id": "1c939772396b69d4",
@@ -70,6 +190,56 @@
     "source_path": "data/docs/stripe-api/v2023-10-16/charges.md"
   },
   {
+    "chunk_id": "74dd97dc2f29ac88",
+    "product_id": "stripe-api",
+    "version": "v2023-10-16",
+    "document_title": "Stripe API v2023-10-16 - Customers API",
+    "section_title": "Create a Customer",
+    "content": "## Create a Customer\n\nIn Stripe API version `2023-10-16`, you create customer objects to manage recurring billing, store card tokens, and track invoice history.\n\n```json\nPOST /v1/customers\n{\n  \"email\": \"customer@example.com\",\n  \"name\": \"Jane Doe\",\n  \"description\": \"Premium subscriber\",\n  \"source\": \"tok_123456789\"\n}\n```",
+    "token_count": 40,
+    "source_path": "data/docs/stripe-api/v2023-10-16/customers.md"
+  },
+  {
+    "chunk_id": "1c829d3c5fe999a2",
+    "product_id": "stripe-api",
+    "version": "v2023-10-16",
+    "document_title": "Stripe API v2023-10-16 - Customers API",
+    "section_title": "Parameters",
+    "content": "### Parameters\n\n- `email` (string, optional): The customer's primary email address.\n- `name` (string, optional): The customer's full name.\n- `source` (string, optional): A payment source token (e.g., `tok_visa`) to attach as the default payment source.",
+    "token_count": 36,
+    "source_path": "data/docs/stripe-api/v2023-10-16/customers.md"
+  },
+  {
+    "chunk_id": "edcfe12b4467170d",
+    "product_id": "stripe-api",
+    "version": "v2023-10-16",
+    "document_title": "Stripe API v2023-10-16 - Customers API",
+    "section_title": "Retrieve and Update Customer",
+    "content": "## Retrieve and Update Customer\n\nRetrieve customer details using the customer ID:\n\n```json\nGET /v1/customers/cus_N9Klx0\n```",
+    "token_count": 16,
+    "source_path": "data/docs/stripe-api/v2023-10-16/customers.md"
+  },
+  {
+    "chunk_id": "3749563dc22d5106",
+    "product_id": "stripe-api",
+    "version": "v2023-10-16",
+    "document_title": "Stripe API v2023-10-16 - Refunds API",
+    "section_title": "Create a Refund",
+    "content": "## Create a Refund\n\nCreate a refund for a previously settled charge using the `Charge` ID.\n\n```json\nPOST /v1/refunds\n{\n  \"charge\": \"ch_3MtwEN2eZvKYlo2C0VvW3S89\",\n  \"amount\": 1000,\n  \"reason\": \"requested_by_customer\"\n}\n```",
+    "token_count": 28,
+    "source_path": "data/docs/stripe-api/v2023-10-16/refunds.md"
+  },
+  {
+    "chunk_id": "aadd6cdaf0ee7618",
+    "product_id": "stripe-api",
+    "version": "v2023-10-16",
+    "document_title": "Stripe API v2023-10-16 - Refunds API",
+    "section_title": "Parameters",
+    "content": "### Parameters\n\n- `charge` (string, required): The identifier of the charge to refund.\n- `amount` (integer, optional): A positive integer in cents representing the partial refund amount. If omitted, the entire charge will be refunded.\n- `reason` (string, optional): String indicating the reason for the refund (`duplicate`, `fraudulent`, or `requested_by_customer`).",
+    "token_count": 50,
+    "source_path": "data/docs/stripe-api/v2023-10-16/refunds.md"
+  },
+  {
     "chunk_id": "d4667718e9903dce",
     "product_id": "stripe-api",
     "version": "v2024-04-01",
@@ -98,5 +268,65 @@
     "content": "### Response\n\nThe response includes a `client_secret` used by Stripe Elements on the frontend.",
     "token_count": 14,
     "source_path": "data/docs/stripe-api/v2024-04-01/charges.md"
+  },
+  {
+    "chunk_id": "4d5c479cb81ce09c",
+    "product_id": "stripe-api",
+    "version": "v2024-04-01",
+    "document_title": "Stripe API v2024-04-01 - Customers & Payment Methods",
+    "section_title": "Create a Customer with PaymentMethods",
+    "content": "## Create a Customer with PaymentMethods\n\nIn Stripe API version `2024-04-01`, customer payment instruments are managed exclusively through `PaymentMethods` rather than legacy sources or card tokens.\n\n```json\nPOST /v1/customers\n{\n  \"email\": \"customer@example.com\",\n  \"name\": \"Jane Doe\",\n  \"metadata\": {\n    \"tier\": \"enterprise\"\n  }\n}\n```",
+    "token_count": 42,
+    "source_path": "data/docs/stripe-api/v2024-04-01/customers.md"
+  },
+  {
+    "chunk_id": "f98d281aab1c27fb",
+    "product_id": "stripe-api",
+    "version": "v2024-04-01",
+    "document_title": "Stripe API v2024-04-01 - Customers & Payment Methods",
+    "section_title": "SetupIntents for Saving Payment Methods",
+    "content": "## SetupIntents for Saving Payment Methods\n\nTo securely collect and save customer payment credentials for future recurring billing without an immediate charge, use `SetupIntents`:\n\n```json\nPOST /v1/setup_intents\n{\n  \"customer\": \"cus_N9Klx0\",\n  \"payment_method_types\": [\"card\"]\n}\n```\n\nThe client application completes authentication via Stripe Elements with the returned `client_secret`.",
+    "token_count": 46,
+    "source_path": "data/docs/stripe-api/v2024-04-01/customers.md"
+  },
+  {
+    "chunk_id": "00baefc475aeffb7",
+    "product_id": "stripe-api",
+    "version": "v2024-04-01",
+    "document_title": "Stripe API v2024-04-01 - Customers & Payment Methods",
+    "section_title": "Customer Search API",
+    "content": "## Customer Search API\n\nSearch for customers using structured query syntax:\n\n```json\nGET /v1/customers/search?query=email:'customer@example.com'\n```",
+    "token_count": 15,
+    "source_path": "data/docs/stripe-api/v2024-04-01/customers.md"
+  },
+  {
+    "chunk_id": "8adeec56fb43d920",
+    "product_id": "stripe-api",
+    "version": "v2024-04-01",
+    "document_title": "Stripe API v2024-04-01 - Refunds & Disputes API",
+    "section_title": "Create a Refund via PaymentIntent",
+    "content": "## Create a Refund via PaymentIntent\n\nIn Stripe API version `2024-04-01`, refunds can be created directly using a `PaymentIntent` ID or a `Charge` ID.\n\n```json\nPOST /v1/refunds\n{\n  \"payment_intent\": \"pi_3MtwEN2eZvKYlo2C0VvW3S89\",\n  \"amount\": 1500,\n  \"reason\": \"requested_by_customer\"\n}\n```",
+    "token_count": 36,
+    "source_path": "data/docs/stripe-api/v2024-04-01/refunds.md"
+  },
+  {
+    "chunk_id": "d5f77b746cefe9c1",
+    "product_id": "stripe-api",
+    "version": "v2024-04-01",
+    "document_title": "Stripe API v2024-04-01 - Refunds & Disputes API",
+    "section_title": "Parameters",
+    "content": "### Parameters\n\n- `payment_intent` (string, optional): ID of the PaymentIntent to refund.\n- `charge` (string, optional): ID of the Charge to refund.\n- `amount` (integer, optional): Amount in cents to refund.",
+    "token_count": 31,
+    "source_path": "data/docs/stripe-api/v2024-04-01/refunds.md"
+  },
+  {
+    "chunk_id": "ba0ea04e41bf5670",
+    "product_id": "stripe-api",
+    "version": "v2024-04-01",
+    "document_title": "Stripe API v2024-04-01 - Refunds & Disputes API",
+    "section_title": "Dispute Evidence Submission",
+    "content": "## Dispute Evidence Submission\n\nManage chargeback disputes programmatically:\n\n```json\nPOST /v1/disputes/dp_1MtwEZ2eZvKYlo2C9kP1bX9Z\n{\n  \"evidence\": {\n    \"customer_communication\": \"file_1MtwEZ2eZvKYlo2C0VvW3S89\",\n    \"uncategorized_text\": \"Customer confirmed order receipt via email.\"\n  }\n}\n```",
+    "token_count": 26,
+    "source_path": "data/docs/stripe-api/v2024-04-01/refunds.md"
   }
 ]

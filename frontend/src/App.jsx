@@ -48,6 +48,7 @@ function App() {
   const [errorMessage, setErrorMessage] = useState(saved?.errorMessage || '')
   const [loading, setLoading] = useState(false)
   const [answerData, setAnswerData] = useState(saved?.answerData || null)
+  const [history, setHistory] = useState([])
 
   useEffect(() => {
     const handleHashChange = () => setPage(getPageFromHash())
@@ -85,6 +86,8 @@ function App() {
     [products, product]
   )
 
+  const displayProductName = selectedProduct?.name || product
+
   const resetResult = () => {
     setAnswerData(null)
     setErrorMessage('')
@@ -118,6 +121,18 @@ function App() {
 
       setAnswerData(data)
 
+      // Add to dynamic session history
+      setHistory((prev) => [
+        {
+          product: displayProductName,
+          version: version,
+          question: question.trim(),
+          status: data.status,
+          time: 'Just now',
+        },
+        ...prev,
+      ])
+
       if (data.status === 'insufficient_documentation') {
         window.location.hash = '#no-docs'
       } else {
@@ -131,23 +146,24 @@ function App() {
     }
   }
 
-  const handleProductChange = (selectedProduct) => {
-    setProduct(selectedProduct)
+  const handleProductChange = (selectedProductId) => {
+    setProduct(selectedProductId)
     setVersion('')
     setError('')
     resetResult()
   }
 
   const handleExampleSelect = (selectedQuestion, selectedProductName, selectedVersion) => {
-    const selected = products.find((item) => item.name === selectedProductName)
+    const selected = products.find(
+      (item) => item.name.toLowerCase() === selectedProductName.toLowerCase() || item.id.toLowerCase() === selectedProductName.toLowerCase()
+    )
+    const selectedId = selected?.id || (selectedProductName.toLowerCase().includes('stripe') ? 'stripe-api' : 'fastapi')
     setQuestion(selectedQuestion)
-    setProduct(selected?.id || '')
+    setProduct(selectedId)
     setVersion(selectedVersion)
     setError('')
     resetResult()
   }
-
-  const displayProductName = selectedProduct?.name || product
 
   const handleRetry = () => {
     window.location.hash = '#ask'
@@ -172,7 +188,7 @@ function App() {
       <Header activePage={page} apiStatus={apiStatus} />
 
       {page === 'history' ? (
-        <HistoryPage />
+        <HistoryPage history={history} />
       ) : page === 'documentation' ? (
         <DocumentationPage />
       ) : page === 'answer' ? (

@@ -1,3 +1,69 @@
+function renderFormattedAnswer(text) {
+  if (!text) return null
+
+  // Split by code blocks first
+  const parts = text.split(/(```[\s\S]*?```)/g)
+
+  return parts.map((part, index) => {
+    if (part.startsWith('```') && part.endsWith('```')) {
+      const firstLineBreak = part.indexOf('\n')
+      const code = firstLineBreak !== -1
+        ? part.slice(firstLineBreak + 1, -3)
+        : part.slice(3, -3)
+
+      return (
+        <pre className="code-block" key={index}>
+          <code>{code.trim()}</code>
+        </pre>
+      )
+    }
+
+    const lines = part.split('\n')
+    return (
+      <div key={index}>
+        {lines.map((line, lIndex) => {
+          const trimmed = line.trim()
+          if (!trimmed) return null
+
+          if (trimmed.startsWith('### ')) {
+            return (
+              <h2 key={lIndex} style={{ marginTop: '14px', marginBottom: '6px' }}>
+                {trimmed.replace('### ', '')}
+              </h2>
+            )
+          }
+
+          if (trimmed.startsWith('## ')) {
+            return (
+              <h2 key={lIndex} style={{ marginTop: '14px', marginBottom: '6px' }}>
+                {trimmed.replace('## ', '')}
+              </h2>
+            )
+          }
+
+          if (trimmed.startsWith('# ')) {
+            return (
+              <h1 key={lIndex} style={{ fontSize: '13px', marginTop: '14px', marginBottom: '6px' }}>
+                {trimmed.replace('# ', '')}
+              </h1>
+            )
+          }
+
+          if (trimmed.startsWith('- ')) {
+            return (
+              <li key={lIndex} style={{ marginLeft: '16px', color: '#9296a4', fontSize: '9px', lineHeight: '1.6' }}>
+                {trimmed.replace('- ', '')}
+              </li>
+            )
+          }
+
+          return <p key={lIndex}>{trimmed}</p>
+        })}
+      </div>
+    )
+  })
+}
+
 function AnswerSourcePage({ product, version, question, answerData }) {
   const selectedProduct = product || answerData?.product_id || 'FastAPI'
   const selectedVersion = version || answerData?.version || 'v0.110.0'
@@ -35,7 +101,7 @@ function AnswerSourcePage({ product, version, question, answerData }) {
         </div>
 
         <div className="source-url-row">
-          {sources[0]?.source_path || 'Source path will appear here'}
+          <span>{sources[0]?.source_path || 'Source path will appear here'}</span>
           <span>{selectedVersion}</span>
         </div>
       </section>
@@ -54,9 +120,7 @@ function AnswerSourcePage({ product, version, question, answerData }) {
         </div>
 
         <div className="excerpt-content">
-          {answer.split('\n').map((line, index) =>
-            line.trim() ? <p key={`${line}-${index}`}>{line}</p> : null
-          )}
+          {renderFormattedAnswer(answer)}
         </div>
       </article>
 
@@ -65,19 +129,39 @@ function AnswerSourcePage({ product, version, question, answerData }) {
         <p>{selectedQuestion}</p>
       </div>
 
-      <section className="source-list">
-        <div className="section-label">SUPPORTING SOURCES</div>
+      <section className="source-list" style={{ marginTop: '20px' }}>
+        <div className="section-label" style={{ marginBottom: '10px' }}>SUPPORTING SOURCES</div>
         {sources.length === 0 ? (
-          <p>No supporting source was returned.</p>
+          <p style={{ color: '#777b89', fontSize: '9px' }}>No supporting source was returned.</p>
         ) : (
-          sources.map((source) => (
-            <article className="source-card" key={source.chunk_id}>
-              <strong>{source.document_title}</strong>
-              <span>{source.section_title}</span>
-              <code>{source.source_path}</code>
-              {source.excerpt && <p>{source.excerpt}</p>}
-            </article>
-          ))
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {sources.map((source) => (
+              <article
+                className="source-card"
+                key={source.chunk_id}
+                style={{
+                  padding: '12px 14px',
+                  border: '1px solid #272a33',
+                  borderRadius: '4px',
+                  background: '#111319',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                  <strong style={{ color: '#e2e5eb', fontSize: '10px' }}>{source.document_title}</strong>
+                  <span className="source-version-tag" style={{ fontSize: '7px' }}>{source.version}</span>
+                </div>
+                <div style={{ color: '#d6a83d', fontSize: '8px', marginBottom: '6px' }}>§ {source.section_title}</div>
+                <code style={{ display: 'block', color: '#555a69', fontSize: '7px', fontFamily: 'ui-monospace, monospace', marginBottom: '6px' }}>
+                  {source.source_path}
+                </code>
+                {source.excerpt && (
+                  <p style={{ margin: 0, color: '#8c909e', fontSize: '9px', lineHeight: '1.45' }}>
+                    {source.excerpt}
+                  </p>
+                )}
+              </article>
+            ))}
+          </div>
         )}
       </section>
 
