@@ -1,3 +1,18 @@
+function formatRelativeTime(timestamp) {
+  if (!timestamp) return 'Recent'
+  const diffMs = Date.now() - timestamp
+  const diffSec = Math.floor(diffMs / 1000)
+  if (diffSec < 60) return 'Just now'
+  const diffMin = Math.floor(diffSec / 60)
+  if (diffMin < 60) return `${diffMin} min ago`
+  const diffHr = Math.floor(diffMin / 60)
+  if (diffHr < 24) return `${diffHr} hr ago`
+  const diffDay = Math.floor(diffHr / 24)
+  if (diffDay === 1) return 'Yesterday'
+  if (diffDay < 7) return `${diffDay} days ago`
+  return new Date(timestamp).toLocaleDateString()
+}
+
 const defaultHistoryItems = [
   {
     product: 'FastAPI',
@@ -36,8 +51,9 @@ const defaultHistoryItems = [
   },
 ]
 
-function HistoryPage({ history = [] }) {
-  const items = history && history.length > 0 ? history : defaultHistoryItems
+function HistoryPage({ history = [], onClearHistory, onSelectQuery }) {
+  const hasUserHistory = Array.isArray(history) && history.length > 0
+  const items = hasUserHistory ? history : defaultHistoryItems
 
   return (
     <main className="history-page">
@@ -47,32 +63,85 @@ function HistoryPage({ history = [] }) {
           <p>Your recent questions and their answers.</p>
         </div>
 
-        <span className="query-count">{items.length} queries</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {hasUserHistory && onClearHistory && (
+            <button
+              className="clear-history-button"
+              onClick={onClearHistory}
+              style={{
+                padding: '7px 11px',
+                border: '1px solid #292c36',
+                borderRadius: '5px',
+                background: '#15171e',
+                color: '#8f93a1',
+                fontSize: '10px',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+              }}
+              title="Clear all saved query history"
+            >
+              Clear History
+            </button>
+          )}
+          <span className="query-count">{items.length} queries</span>
+        </div>
       </div>
 
       <section className="history-section">
-        <div className="history-section-label">RECENT</div>
+        <div className="history-section-label">
+          {hasUserHistory ? 'SAVED HISTORY' : 'RECENT'}
+        </div>
 
         <div className="history-list">
-          {items.map((item, index) => (
-            <article className="history-card" key={`${item.product}-${item.version}-${index}`}>
-              <span className={`history-status ${item.status}`} aria-hidden="true" />
+          {items.map((item, index) => {
+            const isInsufficient =
+              item.status === 'insufficient' || item.status === 'insufficient_documentation'
+            const isError = item.status === 'error'
+            const displayTime = item.timestamp
+              ? formatRelativeTime(item.timestamp)
+              : item.time || 'Recent'
 
-              <div className="history-card-content">
-                <div className="history-meta">
-                  <span className="history-product">{item.product}</span>
-                  <span className="history-version">{item.version}</span>
-                  {item.status === 'insufficient' || item.status === 'insufficient_documentation' ? (
-                    <span className="history-insufficient">Insufficient docs</span>
-                  ) : (
-                    <span className="history-time">{item.time || 'Recent'}</span>
-                  )}
+            return (
+              <article
+                className="history-card"
+                key={item.id || `${item.product}-${item.version}-${index}`}
+                onClick={() => onSelectQuery && onSelectQuery(item)}
+                style={onSelectQuery ? { cursor: 'pointer' } : undefined}
+                title={onSelectQuery ? 'Click to reload this question' : undefined}
+              >
+                <span
+                  className={`history-status ${
+                    isInsufficient ? 'insufficient' : isError ? 'insufficient' : 'success'
+                  }`}
+                  aria-hidden="true"
+                />
+
+                <div className="history-card-content">
+                  <div className="history-meta">
+                    <span className="history-product">{item.product}</span>
+                    <span className="history-version">{item.version}</span>
+                    {isInsufficient ? (
+                      <span className="history-insufficient">Insufficient docs</span>
+                    ) : isError ? (
+                      <span
+                        className="history-insufficient"
+                        style={{
+                          borderColor: '#5b2d2d',
+                          background: '#321b1d',
+                          color: '#e87878',
+                        }}
+                      >
+                        Failed
+                      </span>
+                    ) : null}
+                    <span className="history-time">{displayTime}</span>
+                  </div>
+
+                  <p>{item.question}</p>
                 </div>
-
-                <p>{item.question}</p>
-              </div>
-            </article>
-          ))}
+              </article>
+            )
+          })}
         </div>
       </section>
     </main>
