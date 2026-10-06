@@ -100,6 +100,9 @@ def validate_processed_chunks(
     }
 
     errors = []
+    chunk_ids: set[str] = set()
+    project_root = products_file.parent.parent
+
     for index, chunk in enumerate(chunks):
         pair = (chunk.get("product_id"), chunk.get("version"))
         if pair not in registered:
@@ -107,7 +110,32 @@ def validate_processed_chunks(
                 f"Chunk {index} references unregistered product/version: {pair}"
             )
 
+        chunk_id = chunk.get("chunk_id")
+        if not chunk_id:
+            errors.append(f"Chunk {index} is missing chunk_id")
+        elif chunk_id in chunk_ids:
+            errors.append(f"Duplicate chunk_id found: {chunk_id}")
+        else:
+            chunk_ids.add(chunk_id)
+
+        source_path = chunk.get("source_path")
+        if not source_path:
+            errors.append(f"Chunk {index} is missing source_path")
+        elif not (project_root / source_path).is_file():
+            errors.append(
+                f"Chunk {index} references missing source file: {source_path}"
+            )
+
+        content = chunk.get("content")
+        token_count = chunk.get("token_count")
+        if not isinstance(content, str) or not content.strip():
+            errors.append(f"Chunk {index} has empty content")
+        elif not isinstance(token_count, int) or token_count <= 0:
+            errors.append(f"Chunk {index} has invalid token_count: {token_count}")
+
     if errors:
         raise DataValidationError("\n".join(errors))
 
-    return [f"Validated {len(chunks)} processed chunks."]
+    return [
+        f"Validated {len(chunks)} processed chunks with unique IDs, valid source paths, and registered product/version pairs."
+    ]
