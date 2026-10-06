@@ -20,6 +20,10 @@ async function requestJson(path, options = {}) {
   return payload
 }
 
+export function checkHealth() {
+  return requestJson('/api/health')
+}
+
 export function getProducts() {
   return requestJson('/api/products')
 }

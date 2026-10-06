@@ -88,6 +88,51 @@ class TestVersionAwareRetriever(unittest.TestCase):
         self.assertEqual(results[0].version, "v2024-04-01")
         self.assertIn("PaymentIntents", results[0].content)
 
+    def test_fastapi_dependencies_version_isolation(self):
+        """FastAPI v0.100.0 retrieves Depends/yield; v0.110.0 retrieves Annotated/lifespan."""
+        res_100 = self.retriever.retrieve(
+            product_id="fastapi",
+            version="v0.100.0",
+            question="How do I use yield dependencies and clean-up in FastAPI?",
+            top_k=3,
+        )
+        self.assertGreater(len(res_100), 0)
+        self.assertEqual(res_100[0].version, "v0.100.0")
+        self.assertIn("yield db", res_100[0].content)
+
+        res_110 = self.retriever.retrieve(
+            product_id="fastapi",
+            version="v0.110.0",
+            question="How do I use lifespan context manager for startup and shutdown?",
+            top_k=3,
+        )
+        self.assertGreater(len(res_110), 0)
+        self.assertEqual(res_110[0].version, "v0.110.0")
+        self.assertIn("lifespan", res_110[0].content)
+
+    def test_stripe_customers_and_refunds_retrieval(self):
+        """Stripe v2023 retrieves legacy sources; v2024 retrieves SetupIntents and PaymentMethods."""
+        res_2023 = self.retriever.retrieve(
+            product_id="stripe-api",
+            version="v2023-10-16",
+            question="How do I create a customer with a source token?",
+            top_k=3,
+        )
+        self.assertGreater(len(res_2023), 0)
+        self.assertEqual(res_2023[0].version, "v2023-10-16")
+        self.assertIn("POST /v1/customers", res_2023[0].content)
+        self.assertIn("source", res_2023[0].content)
+
+        res_2024 = self.retriever.retrieve(
+            product_id="stripe-api",
+            version="v2024-04-01",
+            question="How do I use SetupIntents for saving payment methods without charging?",
+            top_k=3,
+        )
+        self.assertGreater(len(res_2024), 0)
+        self.assertEqual(res_2024[0].version, "v2024-04-01")
+        self.assertIn("SetupIntents", res_2024[0].content)
+
 
     def test_no_cross_version_leakage(self):
         """

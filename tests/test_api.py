@@ -120,6 +120,23 @@ class TestAPIEndpoints(unittest.TestCase):
         self.assertEqual(data["version"], "v2023-10-16")
         self.assertIn("/v1/charges", data["answer"])
 
+    def test_query_stripe_v2024_setup_intents(self):
+        """POST /api/query for Stripe API v2024-04-01 returns setup intents info."""
+        payload = {
+            "product_id": "stripe-api",
+            "version": "v2024-04-01",
+            "question": "How do I use SetupIntents for saving payment methods?",
+        }
+        response = self.client.post("/api/query", json=payload)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        self.assertEqual(data["status"], "success")
+        self.assertEqual(data["product_id"], "stripe-api")
+        self.assertEqual(data["version"], "v2024-04-01")
+        self.assertIn("/v1/setup_intents", data["answer"])
+        self.assertGreater(len(data["sources"]), 0)
+
     def test_query_insufficient_documentation(self):
         """POST /api/query with irrelevant question returns status 'insufficient_documentation'."""
         payload = {

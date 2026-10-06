@@ -111,6 +111,36 @@ class TestAnswerGenerator(unittest.TestCase):
         self.assertIn("/v1/payment_intents", result.answer)
         self.assertIn("automatic_payment_methods", result.answer)
 
+    def test_answer_generation_fastapi_lifespan(self):
+        """Generates grounded answer for FastAPI v0.110.0 lifespan context manager."""
+        question = "How do lifespan events work in FastAPI?"
+        result: GeneratedAnswer = self.generator.generate(
+            product_id="fastapi",
+            version="v0.110.0",
+            question=question,
+        )
+
+        self.assertEqual(result.status, "success")
+        self.assertEqual(result.product_id, "fastapi")
+        self.assertEqual(result.version, "v0.110.0")
+        self.assertIn("lifespan", result.answer.lower())
+        self.assertTrue(any("dependencies.md" in s.source_path for s in result.sources))
+
+    def test_answer_generation_stripe_customers_and_refunds(self):
+        """Generates grounded answer for Stripe v2024-04-01 customer search and SetupIntents."""
+        question = "How do I use SetupIntents for saving payment methods?"
+        result: GeneratedAnswer = self.generator.generate(
+            product_id="stripe-api",
+            version="v2024-04-01",
+            question=question,
+        )
+
+        self.assertEqual(result.status, "success")
+        self.assertEqual(result.product_id, "stripe-api")
+        self.assertEqual(result.version, "v2024-04-01")
+        self.assertIn("/v1/setup_intents", result.answer)
+        self.assertTrue(any("customers.md" in s.source_path for s in result.sources))
+
     def test_insufficient_documentation_for_irrelevant_question(self):
         """Irrelevant query returns an explicit insufficient_documentation status and empty sources."""
         question = "How do I make Italian sourdough pizza with olives?"
