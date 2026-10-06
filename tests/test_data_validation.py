@@ -28,7 +28,12 @@ class TestDataValidation(unittest.TestCase):
         messages = validate_processed_chunks(
             DATA / "processed_chunks.json", DATA / "products.json"
         )
-        self.assertEqual(messages, ["Validated 33 processed chunks."])
+        self.assertEqual(
+            messages,
+            [
+                "Validated 33 processed chunks with unique IDs, valid source paths, and registered product/version pairs."
+            ],
+        )
 
     def test_registry_rejects_missing_documentation_directory(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -89,6 +94,33 @@ class TestDataValidation(unittest.TestCase):
             with self.assertRaises(DataValidationError) as ctx:
                 validate_processed_chunks(chunks_file, products_file)
             self.assertIn("unregistered product/version", str(ctx.exception))
+
+    def test_processed_chunks_reject_duplicate_chunk_id(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_path = Path(tmpdir)
+            docs_dir = tmp_path / "docs/demo/v1"
+            docs_dir.mkdir(parents=True)
+            (docs_dir / "guide.md").write_text("# Guide\n\nValid content.", encoding="utf-8")
+
+            products_file = tmp_path / "products.json"
+            chunks_file = tmp_path / "processed_chunks.json"
+            products_file.write_text(
+                json.dumps([
+                    {"id": "demo", "name": "Demo", "versions": [
+                        {"version": "v1", "release_date": "2026-01-01", "doc_dir": "docs/demo/v1"}
+                    ]}
+                ]), encoding="utf-8"
+            )
+            chunk = {
+                "chunk_id": "duplicate", "product_id": "demo", "version": "v1",
+                "source_path": "docs/demo/v1/guide.md", "content": "Valid content.",
+                "token_count": 2
+            }
+            chunks_file.write_text(json.dumps([chunk, chunk]), encoding="utf-8")
+
+            with self.assertRaises(DataValidationError) as ctx:
+                validate_processed_chunks(chunks_file, products_file)
+            self.assertIn("Duplicate chunk_id", str(ctx.exception))
 
 
 if __name__ == "__main__":

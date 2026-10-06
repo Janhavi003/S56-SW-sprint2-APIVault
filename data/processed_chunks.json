@@ -170,24 +170,24 @@
     "source_path": "data/docs/fastapi/v0.110.0/routing.md"
   },
   {
-    "chunk_id": "21412242bcf20351",
+    "chunk_id": "3749563dc22d5106",
     "product_id": "stripe-api",
     "version": "v2023-10-16",
-    "document_title": "Stripe API v2023-10-16 - Charges API",
-    "section_title": "Create a Charge",
-    "content": "## Create a Charge\n\nTo charge a credit card or other payment source, create a `Charge` object.\n\n```json\nPOST /v1/charges\n{\n  \"amount\": 2000,\n  \"currency\": \"usd\",\n  \"source\": \"tok_visa\",\n  \"description\": \"Charge for jenny.rosen@example.com\"\n}\n```",
-    "token_count": 33,
-    "source_path": "data/docs/stripe-api/v2023-10-16/charges.md"
+    "document_title": "Stripe API v2023-10-16 - Refunds API",
+    "section_title": "Create a Refund",
+    "content": "## Create a Refund\n\nCreate a refund for a previously settled charge using the `Charge` ID.\n\n```json\nPOST /v1/refunds\n{\n  \"charge\": \"ch_3MtwEN2eZvKYlo2C0VvW3S89\",\n  \"amount\": 1000,\n  \"reason\": \"requested_by_customer\"\n}\n```",
+    "token_count": 28,
+    "source_path": "data/docs/stripe-api/v2023-10-16/refunds.md"
   },
   {
-    "chunk_id": "e827d34e8b313877",
+    "chunk_id": "aadd6cdaf0ee7618",
     "product_id": "stripe-api",
     "version": "v2023-10-16",
-    "document_title": "Stripe API v2023-10-16 - Charges API",
+    "document_title": "Stripe API v2023-10-16 - Refunds API",
     "section_title": "Parameters",
-    "content": "### Parameters\n\n- `amount` (integer, required): A positive integer representing how much to charge in the smallest currency unit (e.g., 100 cents to charge $1.00).\n- `currency` (string, required): Three-letter ISO currency code, in lowercase. Must be a supported currency.\n- `source` (string, optional): A payment source to be charged. This can be a token, a card ID, or a customer ID.",
-    "token_count": 62,
-    "source_path": "data/docs/stripe-api/v2023-10-16/charges.md"
+    "content": "### Parameters\n\n- `charge` (string, required): The identifier of the charge to refund.\n- `amount` (integer, optional): A positive integer in cents representing the partial refund amount. If omitted, the entire charge will be refunded.\n- `reason` (string, optional): String indicating the reason for the refund (`duplicate`, `fraudulent`, or `requested_by_customer`).",
+    "token_count": 50,
+    "source_path": "data/docs/stripe-api/v2023-10-16/refunds.md"
   },
   {
     "chunk_id": "74dd97dc2f29ac88",
@@ -220,54 +220,54 @@
     "source_path": "data/docs/stripe-api/v2023-10-16/customers.md"
   },
   {
-    "chunk_id": "3749563dc22d5106",
+    "chunk_id": "21412242bcf20351",
     "product_id": "stripe-api",
     "version": "v2023-10-16",
-    "document_title": "Stripe API v2023-10-16 - Refunds API",
-    "section_title": "Create a Refund",
-    "content": "## Create a Refund\n\nCreate a refund for a previously settled charge using the `Charge` ID.\n\n```json\nPOST /v1/refunds\n{\n  \"charge\": \"ch_3MtwEN2eZvKYlo2C0VvW3S89\",\n  \"amount\": 1000,\n  \"reason\": \"requested_by_customer\"\n}\n```",
-    "token_count": 28,
-    "source_path": "data/docs/stripe-api/v2023-10-16/refunds.md"
+    "document_title": "Stripe API v2023-10-16 - Charges API",
+    "section_title": "Create a Charge",
+    "content": "## Create a Charge\n\nTo charge a credit card or other payment source, create a `Charge` object.\n\n```json\nPOST /v1/charges\n{\n  \"amount\": 2000,\n  \"currency\": \"usd\",\n  \"source\": \"tok_visa\",\n  \"description\": \"Charge for jenny.rosen@example.com\"\n}\n```",
+    "token_count": 33,
+    "source_path": "data/docs/stripe-api/v2023-10-16/charges.md"
   },
   {
-    "chunk_id": "aadd6cdaf0ee7618",
+    "chunk_id": "e827d34e8b313877",
     "product_id": "stripe-api",
     "version": "v2023-10-16",
-    "document_title": "Stripe API v2023-10-16 - Refunds API",
+    "document_title": "Stripe API v2023-10-16 - Charges API",
     "section_title": "Parameters",
-    "content": "### Parameters\n\n- `charge` (string, required): The identifier of the charge to refund.\n- `amount` (integer, optional): A positive integer in cents representing the partial refund amount. If omitted, the entire charge will be refunded.\n- `reason` (string, optional): String indicating the reason for the refund (`duplicate`, `fraudulent`, or `requested_by_customer`).",
-    "token_count": 50,
-    "source_path": "data/docs/stripe-api/v2023-10-16/refunds.md"
+    "content": "### Parameters\n\n- `amount` (integer, required): A positive integer representing how much to charge in the smallest currency unit (e.g., 100 cents to charge $1.00).\n- `currency` (string, required): Three-letter ISO currency code, in lowercase. Must be a supported currency.\n- `source` (string, optional): A payment source to be charged. This can be a token, a card ID, or a customer ID.",
+    "token_count": 62,
+    "source_path": "data/docs/stripe-api/v2023-10-16/charges.md"
   },
   {
-    "chunk_id": "d4667718e9903dce",
+    "chunk_id": "8adeec56fb43d920",
     "product_id": "stripe-api",
     "version": "v2024-04-01",
-    "document_title": "Stripe API v2024-04-01 - Charges API & PaymentIntents",
-    "section_title": "Migration Notice: Charges to PaymentIntents",
-    "content": "## Migration Notice: Charges to PaymentIntents\n\nIn Stripe API version `2024-04-01`, direct creation of `Charge` objects via `/v1/charges` is deprecated for customer-facing flows in favor of `PaymentIntents`.",
-    "token_count": 27,
-    "source_path": "data/docs/stripe-api/v2024-04-01/charges.md"
+    "document_title": "Stripe API v2024-04-01 - Refunds & Disputes API",
+    "section_title": "Create a Refund via PaymentIntent",
+    "content": "## Create a Refund via PaymentIntent\n\nIn Stripe API version `2024-04-01`, refunds can be created directly using a `PaymentIntent` ID or a `Charge` ID.\n\n```json\nPOST /v1/refunds\n{\n  \"payment_intent\": \"pi_3MtwEN2eZvKYlo2C0VvW3S89\",\n  \"amount\": 1500,\n  \"reason\": \"requested_by_customer\"\n}\n```",
+    "token_count": 36,
+    "source_path": "data/docs/stripe-api/v2024-04-01/refunds.md"
   },
   {
-    "chunk_id": "7d130c325afba745",
+    "chunk_id": "d5f77b746cefe9c1",
     "product_id": "stripe-api",
     "version": "v2024-04-01",
-    "document_title": "Stripe API v2024-04-01 - Charges API & PaymentIntents",
-    "section_title": "Create a Payment Intent",
-    "content": "## Create a Payment Intent\n\nTo initiate a payment flow:\n\n```json\nPOST /v1/payment_intents\n{\n  \"amount\": 2000,\n  \"currency\": \"usd\",\n  \"automatic_payment_methods\": {\n    \"enabled\": true\n  }\n}\n```",
-    "token_count": 25,
-    "source_path": "data/docs/stripe-api/v2024-04-01/charges.md"
+    "document_title": "Stripe API v2024-04-01 - Refunds & Disputes API",
+    "section_title": "Parameters",
+    "content": "### Parameters\n\n- `payment_intent` (string, optional): ID of the PaymentIntent to refund.\n- `charge` (string, optional): ID of the Charge to refund.\n- `amount` (integer, optional): Amount in cents to refund.",
+    "token_count": 31,
+    "source_path": "data/docs/stripe-api/v2024-04-01/refunds.md"
   },
   {
-    "chunk_id": "fefbdac898242f31",
+    "chunk_id": "ba0ea04e41bf5670",
     "product_id": "stripe-api",
     "version": "v2024-04-01",
-    "document_title": "Stripe API v2024-04-01 - Charges API & PaymentIntents",
-    "section_title": "Response",
-    "content": "### Response\n\nThe response includes a `client_secret` used by Stripe Elements on the frontend.",
-    "token_count": 14,
-    "source_path": "data/docs/stripe-api/v2024-04-01/charges.md"
+    "document_title": "Stripe API v2024-04-01 - Refunds & Disputes API",
+    "section_title": "Dispute Evidence Submission",
+    "content": "## Dispute Evidence Submission\n\nManage chargeback disputes programmatically:\n\n```json\nPOST /v1/disputes/dp_1MtwEZ2eZvKYlo2C9kP1bX9Z\n{\n  \"evidence\": {\n    \"customer_communication\": \"file_1MtwEZ2eZvKYlo2C0VvW3S89\",\n    \"uncategorized_text\": \"Customer confirmed order receipt via email.\"\n  }\n}\n```",
+    "token_count": 26,
+    "source_path": "data/docs/stripe-api/v2024-04-01/refunds.md"
   },
   {
     "chunk_id": "4d5c479cb81ce09c",
@@ -300,33 +300,33 @@
     "source_path": "data/docs/stripe-api/v2024-04-01/customers.md"
   },
   {
-    "chunk_id": "8adeec56fb43d920",
+    "chunk_id": "d4667718e9903dce",
     "product_id": "stripe-api",
     "version": "v2024-04-01",
-    "document_title": "Stripe API v2024-04-01 - Refunds & Disputes API",
-    "section_title": "Create a Refund via PaymentIntent",
-    "content": "## Create a Refund via PaymentIntent\n\nIn Stripe API version `2024-04-01`, refunds can be created directly using a `PaymentIntent` ID or a `Charge` ID.\n\n```json\nPOST /v1/refunds\n{\n  \"payment_intent\": \"pi_3MtwEN2eZvKYlo2C0VvW3S89\",\n  \"amount\": 1500,\n  \"reason\": \"requested_by_customer\"\n}\n```",
-    "token_count": 36,
-    "source_path": "data/docs/stripe-api/v2024-04-01/refunds.md"
+    "document_title": "Stripe API v2024-04-01 - Charges API & PaymentIntents",
+    "section_title": "Migration Notice: Charges to PaymentIntents",
+    "content": "## Migration Notice: Charges to PaymentIntents\n\nIn Stripe API version `2024-04-01`, direct creation of `Charge` objects via `/v1/charges` is deprecated for customer-facing flows in favor of `PaymentIntents`.",
+    "token_count": 27,
+    "source_path": "data/docs/stripe-api/v2024-04-01/charges.md"
   },
   {
-    "chunk_id": "d5f77b746cefe9c1",
+    "chunk_id": "7d130c325afba745",
     "product_id": "stripe-api",
     "version": "v2024-04-01",
-    "document_title": "Stripe API v2024-04-01 - Refunds & Disputes API",
-    "section_title": "Parameters",
-    "content": "### Parameters\n\n- `payment_intent` (string, optional): ID of the PaymentIntent to refund.\n- `charge` (string, optional): ID of the Charge to refund.\n- `amount` (integer, optional): Amount in cents to refund.",
-    "token_count": 31,
-    "source_path": "data/docs/stripe-api/v2024-04-01/refunds.md"
+    "document_title": "Stripe API v2024-04-01 - Charges API & PaymentIntents",
+    "section_title": "Create a Payment Intent",
+    "content": "## Create a Payment Intent\n\nTo initiate a payment flow:\n\n```json\nPOST /v1/payment_intents\n{\n  \"amount\": 2000,\n  \"currency\": \"usd\",\n  \"automatic_payment_methods\": {\n    \"enabled\": true\n  }\n}\n```",
+    "token_count": 25,
+    "source_path": "data/docs/stripe-api/v2024-04-01/charges.md"
   },
   {
-    "chunk_id": "ba0ea04e41bf5670",
+    "chunk_id": "fefbdac898242f31",
     "product_id": "stripe-api",
     "version": "v2024-04-01",
-    "document_title": "Stripe API v2024-04-01 - Refunds & Disputes API",
-    "section_title": "Dispute Evidence Submission",
-    "content": "## Dispute Evidence Submission\n\nManage chargeback disputes programmatically:\n\n```json\nPOST /v1/disputes/dp_1MtwEZ2eZvKYlo2C9kP1bX9Z\n{\n  \"evidence\": {\n    \"customer_communication\": \"file_1MtwEZ2eZvKYlo2C0VvW3S89\",\n    \"uncategorized_text\": \"Customer confirmed order receipt via email.\"\n  }\n}\n```",
-    "token_count": 26,
-    "source_path": "data/docs/stripe-api/v2024-04-01/refunds.md"
+    "document_title": "Stripe API v2024-04-01 - Charges API & PaymentIntents",
+    "section_title": "Response",
+    "content": "### Response\n\nThe response includes a `client_secret` used by Stripe Elements on the frontend.",
+    "token_count": 14,
+    "source_path": "data/docs/stripe-api/v2024-04-01/charges.md"
   }
 ]
