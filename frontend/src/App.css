@@ -490,6 +490,12 @@
   white-space: nowrap;
 }
 
+.clear-history-button:hover {
+  border-color: #3f4453 !important;
+  color: #dfe2e8 !important;
+  background: #1a1d26 !important;
+}
+
 .history-section-label {
   margin-bottom: 16px;
   color: #666b7a;

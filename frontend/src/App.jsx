@@ -24,6 +24,21 @@ const savedQuery = () => {
   }
 }
 
+const loadSavedHistory = () => {
+  try {
+    const raw = localStorage.getItem('apivault-history')
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return []
+    return parsed.filter(
+      (item) => item && typeof item === 'object' && typeof item.question === 'string'
+    )
+  } catch (error) {
+    console.warn('Failed to load history from localStorage:', error)
+    return []
+  }
+}
+
 const getPageFromHash = () => {
   if (window.location.hash === '#history') return 'history'
   if (window.location.hash === '#documentation') return 'documentation'
@@ -48,7 +63,7 @@ function App() {
   const [errorMessage, setErrorMessage] = useState(saved?.errorMessage || '')
   const [loading, setLoading] = useState(false)
   const [answerData, setAnswerData] = useState(saved?.answerData || null)
-  const [history, setHistory] = useState([])
+  const [history, setHistory] = useState(loadSavedHistory)
 
   useEffect(() => {
     const handleHashChange = () => setPage(getPageFromHash())
@@ -80,6 +95,14 @@ function App() {
       JSON.stringify({ product, version, question, answerData, errorMessage })
     )
   }, [product, version, question, answerData, errorMessage])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('apivault-history', JSON.stringify(history))
+    } catch (e) {
+      console.warn('Failed to persist history to localStorage', e)
+    }
+  }, [history])
 
   const selectedProduct = useMemo(
     () => products.find((item) => item.id === product),
@@ -121,17 +144,18 @@ function App() {
 
       setAnswerData(data)
 
-      // Add to dynamic session history
-      setHistory((prev) => [
-        {
-          product: displayProductName,
-          version: version,
-          question: question.trim(),
-          status: data.status,
-          time: 'Just now',
-        },
-        ...prev,
-      ])
+      // Add to persistent history
+      const historyItem = {
+        id: `hist-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        product: displayProductName,
+        productId: product,
+        version: version,
+        question: question.trim(),
+        status: data.status,
+        timestamp: Date.now(),
+        time: 'Just now',
+      }
+      setHistory((prev) => [historyItem, ...(Array.isArray(prev) ? prev : [])])
 
       if (data.status === 'insufficient_documentation') {
         window.location.hash = '#no-docs'
@@ -140,6 +164,21 @@ function App() {
       }
     } catch (requestError) {
       setErrorMessage(requestError.message)
+
+      // Record failed query in persistent history
+      const failedItem = {
+        id: `hist-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        product: displayProductName,
+        productId: product,
+        version: version,
+        question: question.trim(),
+        status: 'error',
+        timestamp: Date.now(),
+        time: 'Just now',
+        errorMessage: requestError.message,
+      }
+      setHistory((prev) => [failedItem, ...(Array.isArray(prev) ? prev : [])])
+
       window.location.hash = '#error'
     } finally {
       setLoading(false)
@@ -155,9 +194,12 @@ function App() {
 
   const handleExampleSelect = (selectedQuestion, selectedProductName, selectedVersion) => {
     const selected = products.find(
-      (item) => item.name.toLowerCase() === selectedProductName.toLowerCase() || item.id.toLowerCase() === selectedProductName.toLowerCase()
+      (item) =>
+        item.name.toLowerCase() === selectedProductName.toLowerCase() ||
+        item.id.toLowerCase() === selectedProductName.toLowerCase()
     )
-    const selectedId = selected?.id || (selectedProductName.toLowerCase().includes('stripe') ? 'stripe-api' : 'fastapi')
+    const selectedId =
+      selected?.id || (selectedProductName.toLowerCase().includes('stripe') ? 'stripe-api' : 'fastapi')
     setQuestion(selectedQuestion)
     setProduct(selectedId)
     setVersion(selectedVersion)
@@ -165,30 +207,61 @@ function App() {
     resetResult()
   }
 
+  const handleClearHistory = () => {
+    setHistory([])
+    try {
+      localStorage.removeItem('apivault-history')
+    } catch (e) {
+      console.warn('Failed to clear history from localStorage', e)
+    }
+  }
+
+  const handleSelectHistoryQuery = (item) => {
+    if (!item) return
+    if (item.productId) {
+      setProduct(item.productId)
+    } else if (item.product) {
+      const matched = products.find(
+        (p) => p.name.toLowerCase() === item.product.toLowerCase() || p.id === item.product
+      )
+      if (matched) setProduct(matched.id)
+    }
+    if (item.version) setVersion(item.version)
+    if (item.question) setQuestion(item.question)
+    setError('')
+    resetResult()
+    window.location.hash = '#ask'
+  }
+
   const handleRetry = () => {
     window.location.hash = '#ask'
   }
 
-  const state = page === 'answer'
-    ? 'Answer'
-    : page === 'source'
-      ? 'Source'
-      : page === 'error'
-        ? 'Error'
-        : page === 'loading'
-          ? 'Loading'
-          : page === 'no-docs'
-            ? 'No Docs'
-            : page === 'ask'
-              ? 'Ask'
-              : 'demo'
+  const state =
+    page === 'answer'
+      ? 'Answer'
+      : page === 'source'
+        ? 'Source'
+        : page === 'error'
+          ? 'Error'
+          : page === 'loading'
+            ? 'Loading'
+            : page === 'no-docs'
+              ? 'No Docs'
+              : page === 'ask'
+                ? 'Ask'
+                : 'demo'
 
   return (
     <div className="app-shell">
       <Header activePage={page} apiStatus={apiStatus} />
 
       {page === 'history' ? (
-        <HistoryPage history={history} />
+        <HistoryPage
+          history={history}
+          onClearHistory={handleClearHistory}
+          onSelectQuery={handleSelectHistoryQuery}
+        />
       ) : page === 'documentation' ? (
         <DocumentationPage />
       ) : page === 'answer' ? (
