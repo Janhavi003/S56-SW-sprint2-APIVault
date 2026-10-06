@@ -667,6 +667,41 @@
   background: #ffb70e;
 }
 
+.copy-answer-button {
+  flex: 0 0 auto;
+  padding: 7px 11px;
+  border: 1px solid #2f3442;
+  border-radius: 3px;
+  background: #191b24;
+  color: #e2e5eb;
+  font-size: 9px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.copy-answer-button:hover {
+  background: #232733;
+  border-color: #43495c;
+  color: #ffffff;
+}
+
+.copy-answer-button.copied {
+  background: #142a20;
+  border-color: #23593e;
+  color: #38d39f;
+}
+
+.copy-answer-button.error {
+  background: #321c20;
+  border-color: #5d2b31;
+  color: #ff767b;
+}
+
 .source-meta-row {
   padding: 9px 16px;
   border-top: 1px solid #20222b;
