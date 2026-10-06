@@ -52,13 +52,70 @@ The initial MVP will allow a developer to:
 
 ## Project Status
 
-Currently in the **Research and Planning** phase.
+MVP complete with grounded version-aware retrieval and exact source attribution.
+
+## Quick Start
+
+### 1. One-Command Development Startup
+
+Run both the FastAPI backend and Vite frontend concurrently with a single command:
+
+```bash
+# Cross-platform (Windows, macOS, Linux)
+python start.py
+```
+
+* **Frontend UI**: [http://localhost:5173](http://localhost:5173)
+* **Backend API**: [http://127.0.0.1:8000](http://127.0.0.1:8000)
+* **Interactive API Docs (Swagger)**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+* **API Health Check**: [http://127.0.0.1:8000/api/health](http://127.0.0.1:8000/api/health)
+
+Press `Ctrl+C` in the terminal to stop both servers simultaneously.
+
+---
+
+### 2. Running Services Individually
+
+If you prefer running services in separate terminals:
+
+```bash
+# Start Backend only (Port 8000)
+python start.py --backend
+# or:
+cd backend
+uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+
+# Start Frontend only (Port 5173)
+python start.py --frontend
+# or:
+cd frontend
+npm run dev
+```
+
+---
+
+### 3. Running Tests & Data Ingestion
+
+```bash
+# Run backend test suite
+python -m unittest discover tests -v
+
+# Re-run data chunking & ingestion pipeline
+python backend/scripts/ingest.py
+
+# Build frontend production bundle
+cd frontend && npm run build
+```
+
+---
 
 ## Project Structure
 
 ```text
-frontend/   - User interface
-backend/    - Backend and application logic
-data/       - Documentation and data resources
-docs/       - Project documentation
-tests/      - Testing resources
+frontend/   - React + Vite user interface
+backend/    - FastAPI application & RAG services (Retriever, Generator, Chunker)
+data/       - Version-tagged documentation Markdown files & processed chunks
+docs/       - Architecture & project specifications
+tests/      - Unit and integration test suite
+start.py    - Unified single-command development launcher
+```
