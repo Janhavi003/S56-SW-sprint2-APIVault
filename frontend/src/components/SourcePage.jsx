@@ -1,8 +1,50 @@
+import { useState } from 'react'
+
 function SourcePage({ product, version, question, answerData }) {
+  const [copyStatus, setCopyStatus] = useState('idle')
   const selectedProduct = product || answerData?.product_id || 'FastAPI'
   const selectedVersion = version || answerData?.version || 'v0.110.0'
   const selectedQuestion = question || answerData?.question || 'Ask a documentation question.'
   const source = answerData?.sources?.[0]
+
+  const handleCopySource = async () => {
+    let md = `## Source Document: ${source?.document_title || selectedProduct}\n`
+    md += `- **Product & Version**: ${source?.product_id || selectedProduct} (${source?.version || selectedVersion})\n`
+    if (source?.section_title) md += `- **Section**: ${source?.section_title}\n`
+    if (source?.source_path) md += `- **Path**: \`${source?.source_path}\`\n\n`
+    md += `### Source Content Excerpt\n`
+    md += `> ${source?.excerpt?.split('\n').join('\n> ') || 'No excerpt available.'}\n\n`
+    md += `---\n*Indexed in APIVault*`
+
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(md)
+        setCopyStatus('copied')
+      } else {
+        const textArea = document.createElement('textarea')
+        textArea.value = md
+        textArea.style.position = 'fixed'
+        textArea.style.opacity = '0'
+        document.body.appendChild(textArea)
+        textArea.focus()
+        textArea.select()
+        const successful = document.execCommand('copy')
+        document.body.removeChild(textArea)
+        if (successful) {
+          setCopyStatus('copied')
+        } else {
+          throw new Error('execCommand failed')
+        }
+      }
+    } catch (err) {
+      console.warn('Clipboard copy failed:', err)
+      setCopyStatus('error')
+    }
+
+    setTimeout(() => {
+      setCopyStatus('idle')
+    }, 2500)
+  }
 
   return (
     <main className="answer-source-page">
@@ -18,9 +60,19 @@ function SourcePage({ product, version, question, answerData }) {
             </div>
           </div>
 
-          <a className="open-docs-button" href="#source">
-            Indexed Source ↗
-          </a>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              className={`copy-answer-button ${copyStatus}`}
+              onClick={handleCopySource}
+              title="Copy source details and excerpt as Markdown"
+            >
+              {copyStatus === 'copied' ? '✓ Copied' : copyStatus === 'error' ? '✕ Copy Failed' : '⎘ Copy Source'}
+            </button>
+
+            <a className="open-docs-button" href="#answer">
+              View Answer ↗
+            </a>
+          </div>
         </div>
 
         <div className="source-meta-row">

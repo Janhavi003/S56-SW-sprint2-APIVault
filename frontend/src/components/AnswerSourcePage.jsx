@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 function renderFormattedAnswer(text) {
   if (!text) return null
 
@@ -64,12 +66,80 @@ function renderFormattedAnswer(text) {
   })
 }
 
+export function formatAnswerMarkdown({ product, version, question, answer, sources = [] }) {
+  let md = `## Question\n${question}\n\n`
+  md += `## Answer (${product} ${version})\n\n${answer}\n\n`
+  md += `---\n\n### Supporting Documentation Sources\n`
+
+  if (!sources || sources.length === 0) {
+    md += `- **Product**: ${product}\n- **Version**: ${version}\n- *No source citations returned.*\n`
+  } else {
+    sources.forEach((src, idx) => {
+      md += `\n**Source #${idx + 1}: ${src.document_title || product}**\n`
+      md += `- **Product & Version**: ${src.product_id || product} (${src.version || version})\n`
+      if (src.section_title) {
+        md += `- **Section**: ${src.section_title}\n`
+      }
+      if (src.source_path) {
+        md += `- **Path**: \`${src.source_path}\`\n`
+      }
+      if (src.excerpt) {
+        md += `\n> ${src.excerpt.split('\n').join('\n> ')}\n`
+      }
+    })
+  }
+
+  md += `\n---\n*Grounded & generated via APIVault*`
+  return md
+}
+
 function AnswerSourcePage({ product, version, question, answerData }) {
+  const [copyStatus, setCopyStatus] = useState('idle') // 'idle' | 'copied' | 'error'
+
   const selectedProduct = product || answerData?.product_id || 'FastAPI'
   const selectedVersion = version || answerData?.version || 'v0.110.0'
   const selectedQuestion = question || answerData?.question || 'Ask a documentation question.'
   const sources = answerData?.sources || []
   const answer = answerData?.answer || 'No answer data is available yet.'
+
+  const handleCopyAnswer = async () => {
+    const textToCopy = formatAnswerMarkdown({
+      product: selectedProduct,
+      version: selectedVersion,
+      question: selectedQuestion,
+      answer,
+      sources,
+    })
+
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(textToCopy)
+        setCopyStatus('copied')
+      } else {
+        const textArea = document.createElement('textarea')
+        textArea.value = textToCopy
+        textArea.style.position = 'fixed'
+        textArea.style.opacity = '0'
+        document.body.appendChild(textArea)
+        textArea.focus()
+        textArea.select()
+        const successful = document.execCommand('copy')
+        document.body.removeChild(textArea)
+        if (successful) {
+          setCopyStatus('copied')
+        } else {
+          throw new Error('execCommand failed')
+        }
+      }
+    } catch (err) {
+      console.warn('Clipboard copy failed:', err)
+      setCopyStatus('error')
+    }
+
+    setTimeout(() => {
+      setCopyStatus('idle')
+    }, 2500)
+  }
 
   return (
     <main className="answer-source-page">
@@ -85,9 +155,19 @@ function AnswerSourcePage({ product, version, question, answerData }) {
             </div>
           </div>
 
-          <a className="open-docs-button" href="#source">
-            View Source ↗
-          </a>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              className={`copy-answer-button ${copyStatus}`}
+              onClick={handleCopyAnswer}
+              title="Copy answer and source citations to clipboard as Markdown"
+            >
+              {copyStatus === 'copied' ? '✓ Copied' : copyStatus === 'error' ? '✕ Copy Failed' : '⎘ Copy Answer'}
+            </button>
+
+            <a className="open-docs-button" href="#source">
+              View Source ↗
+            </a>
+          </div>
         </div>
 
         <div className="source-meta-row">
