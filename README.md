@@ -2,57 +2,82 @@
 
 ## Version-Aware Technical Documentation Assistant
 
-APIVault is a version-aware documentation question-answering system designed to help developers find accurate technical information for a specific software product and version.
+APIVault is a version-aware technical documentation question-answering system designed to help developers find accurate, verified technical information for specific software products and versions without hallucination or cross-version confusion.
 
-Developers can select a product and version, ask a technical question, and receive an answer supported by the relevant documentation source.
+Developers select a product and version, ask a technical question, and receive a grounded answer strictly supported by and cited against the exact documentation source.
+
+---
 
 ## Core Problem
 
-Software documentation is often distributed across:
+Software documentation is frequently fragmented across version-specific docs, release notes, changelogs, and migration guides. This causes developers to:
+* Retrieve obsolete or premature syntax for the wrong version (e.g., mixing Pydantic v1 and v2 syntax in FastAPI).
+* Encounter hallucinated or merged API behavior across disparate releases.
+* Spend excessive time verifying whether an AI answer matches their active SDK/framework release.
 
-- API references
-- Version-specific documentation
-- Migration guides
-- Changelogs
-- Release notes
-- Technical guides
-
-This can cause developers to:
-
-- Find information for the wrong version
-- Mix information from different versions
-- Spend time searching multiple documentation sources
-- Make integration mistakes
-- Have difficulty verifying whether an answer is correct
-
-## Core Solution
-
-APIVault focuses on:
-
-**Product + Version → Question → Retrieval → Answer → Exact Source**
-
-The system should retrieve documentation relevant to the selected product and version, provide a grounded answer, and show the source used to support that answer.
+---
 
 ## Key Differentiator
 
-**Version-Specific Answers + Exact Source Attribution**
+**Strict Version-Specific Retrieval + Exact Source Attribution**
 
-APIVault is not intended to be a generic chatbot. Its primary purpose is to provide version-aware technical answers that developers can verify against the original documentation.
+APIVault is not a generic chatbot. Its primary purpose is to provide deterministic, version-isolated technical answers that developers can verify against exact indexed documentation chunks with zero cross-version or cross-product leakage.
 
-## MVP
+---
 
-The initial MVP will allow a developer to:
+## Architecture & Flow
 
-1. Select a product
-2. Select a version
-3. Ask a technical question
-4. Retrieve relevant version-specific documentation
-5. Receive a grounded answer
-6. Inspect the supporting source
+```text
+┌────────────────────────────────────────────────────────┐
+│                   React + Vite Frontend                 │
+│   (Product/Version Selectors, Ask Form, Source View)   │
+└───────────────────────────┬────────────────────────────┘
+                            │ HTTP JSON (POST /api/query)
+                            ▼
+┌────────────────────────────────────────────────────────┐
+│                   FastAPI Backend API                  │
+│                (Validation & Route Handler)            │
+└───────────────────────────┬────────────────────────────┘
+                            │
+                            ▼
+┌────────────────────────────────────────────────────────┐
+│               VersionAwareRetriever                    │
+│   1. Strict pre-filtering by (product_id, version)     │
+│   2. Lexical scoring (Section, Title, BM25 saturation) │
+│   3. Top-k rank ordering                               │
+└───────────────────────────┬────────────────────────────┘
+                            │ Retrieved Chunks & Metadata
+                            ▼
+┌────────────────────────────────────────────────────────┐
+│                  AnswerGenerator                       │
+│   1. Grounded synthesis strictly from context           │
+│   2. Formats citations & confidence score               │
+│   3. Insufficient documentation fallback               │
+└────────────────────────────────────────────────────────┘
+```
 
-## Project Status
+---
 
-MVP complete with grounded version-aware retrieval and exact source attribution.
+## Supported Products & Versions
+
+| Product | ID | Registered Versions | Topics Covered |
+| :--- | :--- | :--- | :--- |
+| **FastAPI** | `fastapi` | `v0.100.0`, `v0.110.0` | Path parameters, Pydantic v1 vs v2, `typing.Annotated`, `Depends()`, `lifespan` context manager, response models |
+| **Stripe API** | `stripe-api` | `v2023-10-16`, `v2024-04-01` | Charges API, customer tokens, PaymentIntents migration, SetupIntents, customer search, refunds & disputes |
+
+---
+
+## Major Completed Features
+
+* **Grounded Version-Aware Q&A**: End-to-end question answering strictly constrained to the selected product and version.
+* **Exact Source Attribution**: Every response includes source path, document title, section title, and verbatim excerpt.
+* **Zero Cross-Version Leakage**: Pre-filtering guarantees that queries for one version never receive context or chunks from another.
+* **Persistent Query History**: Browser `localStorage` persistence with automatic hydration, dynamic relative timestamps, click-to-reload, and clear-history support.
+* **Markdown Answer Export**: One-click "Copy Answer" and "Copy Source" with full citation formatting and visual feedback.
+* **Single-Command Dev Startup**: Unified cross-platform launcher (`python start.py`) running backend and frontend concurrently with process tree cleanup on exit.
+* **Automated CI/CD**: GitHub Actions pipeline executing 47 unit & benchmark tests and verifying frontend production builds on every push/PR.
+
+---
 
 ## Quick Start
 
@@ -76,8 +101,6 @@ Press `Ctrl+C` in the terminal to stop both servers simultaneously.
 
 ### 2. Running Services Individually
 
-If you prefer running services in separate terminals:
-
 ```bash
 # Start Backend only (Port 8000)
 python start.py --backend
@@ -97,8 +120,11 @@ npm run dev
 ### 3. Running Tests & Data Ingestion
 
 ```bash
-# Run backend test suite
+# Run backend test suite (47 tests including benchmark regression)
 python -m unittest discover tests -v
+
+# Run standalone retrieval benchmark evaluation
+python backend/scripts/benchmark.py
 
 # Re-run data chunking & ingestion pipeline
 python backend/scripts/ingest.py
@@ -107,25 +133,105 @@ python backend/scripts/ingest.py
 cd frontend && npm run build
 ```
 
+---
+
+## Backend REST API Endpoints
+
+### 1. Health Check
+* **`GET /api/health`**
+* **Response**: `{"status": "ok", "app": "APIVault", "version": "1.0.0"}`
+
+### 2. Product & Version Registry
+* **`GET /api/products`**
+* **Response**: Dynamic list of registered products, descriptions, and supported versions from `data/products.json`.
+
+### 3. Documentation Query
+* **`POST /api/query`**
+* **Request Body**:
+  ```json
+  {
+    "product_id": "fastapi",
+    "version": "v0.110.0",
+    "question": "How do lifespan events work in FastAPI?",
+    "top_k": 3
+  }
+  ```
+* **Response**:
+  ```json
+  {
+    "status": "success",
+    "product_id": "fastapi",
+    "version": "v0.110.0",
+    "question": "How do lifespan events work in FastAPI?",
+    "answer": "...",
+    "confidence": 0.85,
+    "sources": [
+      {
+        "chunk_id": "ea91210a9fac1489",
+        "document_title": "FastAPI v0.110.0 - Dependency Injection & Lifespan",
+        "section_title": "Lifespan Events Context Manager",
+        "source_path": "data/docs/fastapi/v0.110.0/dependencies.md",
+        "excerpt": "..."
+      }
+    ]
+  }
+  ```
+
+---
+
+## Retrieval Benchmark Evaluation
+
+Evaluated across 23 deterministic test cases covering relevant, irrelevant, and cross-version edge cases:
+
+| Metric | Score | SLA Target | Status |
+| :--- | :--- | :--- | :--- |
+| **Mean Reciprocal Rank (MRR)** | **1.0000** | $\ge 0.95$ | **PASS** |
+| **Hit Rate@1** | **100.0%** (15/15) | $\ge 95\%$ | **PASS** |
+| **Hit Rate@3** | **100.0%** (15/15) | $\ge 95\%$ | **PASS** |
+| **Irrelevant Query Rejection** | **100.0%** (4/4 True Negatives) | $100\%$ | **PASS** |
+| **Version/Product Isolation** | **100.0%** (0% Leakage) | $100\%$ | **PASS** |
+| **Avg Retrieval Latency** | **0.27 ms** | $< 10.0\text{ ms}$ | **PASS** |
+| **Avg E2E Generation Latency** | **0.35 ms** | $< 50.0\text{ ms}$ | **PASS** |
+
+---
+
 ## Continuous Integration (CI)
 
-Automated project validation is configured via GitHub Actions in [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml).
-
-Every push and pull request to `main` automatically triggers:
-1. **Backend Tests & Benchmark**: Sets up Python 3.11 with pip caching, installs `backend/requirements.txt`, and runs all 47 unit & benchmark tests (`python -m unittest discover tests -v`).
-2. **Frontend Build & Validation**: Sets up Node.js 20 with npm caching, installs dependencies (`npm ci`), and validates the production Vite build (`npm run build`).
+Configured in [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml) with parallel validation jobs:
+* **`backend-test`**: Sets up Python 3.11 with pip caching, installs `backend/requirements.txt`, and executes all 47 backend tests.
+* **`frontend-build`**: Sets up Node.js 20 with npm caching, installs dependencies (`npm ci`), and verifies production compilation (`npm run build`).
 
 ---
 
 ## Project Structure
 
 ```text
-.github/    - GitHub Actions CI workflows
-frontend/   - React + Vite user interface
-backend/    - FastAPI application & RAG services (Retriever, Generator, Chunker)
-data/       - Version-tagged documentation Markdown files & processed chunks
-docs/       - Architecture & project specifications
-tests/      - Unit, integration, and retrieval benchmark test suite
-start.py    - Unified single-command development launcher
+.github/
+  └── workflows/
+      └── ci.yml             # GitHub Actions CI workflow
+backend/
+  ├── app/
+  │   ├── models/schemas.py  # Pydantic data schemas
+  │   ├── services/          # Retriever, Generator, Chunker, Validator
+  │   └── main.py            # FastAPI HTTP application
+  ├── requirements.txt       # Backend Python dependencies
+  └── scripts/
+      ├── ingest.py          # Markdown chunking & ingestion pipeline
+      └── benchmark.py       # Retrieval benchmark evaluation suite
+data/
+  ├── docs/                  # Version-tagged Markdown documentation
+  ├── products.json          # Product & version registry
+  └── processed_chunks.json  # Ingested documentation chunks index
+docs/
+  ├── APIVault_PRD.md        # Product Requirements Document
+  └── SPRINT2_DELIVERABLES.md # Sprint 2 Deliverables & Verification Summary
+frontend/
+  ├── src/                   # React components & UI logic
+  ├── package.json           # Frontend dependencies & scripts
+  └── vite.config.js         # Vite configuration
+tests/                       # Unit, integration, API, and benchmark tests
+start.py                     # Unified single-command dev server launcher
+start.bat                    # Windows startup script
+start.sh                     # Unix/macOS startup script
+README.md                    # Project documentation
 ```
-
