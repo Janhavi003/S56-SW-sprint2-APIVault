@@ -83,7 +83,7 @@ If you prefer running services in separate terminals:
 python start.py --backend
 # or:
 cd backend
-uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+python -m uvicorn app.main:app --reload --port 8000
 
 # Start Frontend only (Port 5173)
 python start.py --frontend
@@ -107,15 +107,25 @@ python backend/scripts/ingest.py
 cd frontend && npm run build
 ```
 
+## Continuous Integration (CI)
+
+Automated project validation is configured via GitHub Actions in [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml).
+
+Every push and pull request to `main` automatically triggers:
+1. **Backend Tests & Benchmark**: Sets up Python 3.11 with pip caching, installs `backend/requirements.txt`, and runs all 47 unit & benchmark tests (`python -m unittest discover tests -v`).
+2. **Frontend Build & Validation**: Sets up Node.js 20 with npm caching, installs dependencies (`npm ci`), and validates the production Vite build (`npm run build`).
+
 ---
 
 ## Project Structure
 
 ```text
+.github/    - GitHub Actions CI workflows
 frontend/   - React + Vite user interface
 backend/    - FastAPI application & RAG services (Retriever, Generator, Chunker)
 data/       - Version-tagged documentation Markdown files & processed chunks
 docs/       - Architecture & project specifications
-tests/      - Unit and integration test suite
+tests/      - Unit, integration, and retrieval benchmark test suite
 start.py    - Unified single-command development launcher
-```
+```
+
